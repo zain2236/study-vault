@@ -1,9 +1,42 @@
-import { Link } from 'react-router';
+import type { ActionFunctionArgs } from 'react-router';
+import { Form, Link, useActionData } from 'react-router';
 import { useState } from 'react';
+import { createLoginSession} from '../../utils/session.server';
+import prisma from '../../utils/prisma.server';
 
 import { BookOpen, Mail, Lock, ArrowRight, Eye, EyeOff } from 'lucide-react';
 
+
+export async function action({request}: ActionFunctionArgs) {
+  const form = await request.formData();
+  const email = form.get('email');
+  const password = form.get('password');
+
+  if ( !email) {
+    return ({error : "Email is Required"});
+  }
+  if ( !password) {
+    return ({error : "Passowrd is Required"});
+  }
+
+  const user = await prisma.user.findUnique({ where: { email: email as string } });
+
+
+  // Check User and Credientails
+  if (!user) {
+   return { error : "Invalid credientails "}
+  }
+  if (user.password !== password) {
+    return {error : 'Invalid password'};
+  }
+  
+   await createLoginSession(user.id , "");
+
+}
+
 export default function LoginPage() {
+  const actionData = useActionData ()
+  
   const [showPassword, setShowPassword] = useState(false);
 
   return (
@@ -29,7 +62,7 @@ export default function LoginPage() {
         </div>
 
         {/* Login Card */}
-        <div className="bg-white rounded-2xl shadow-2xl p-8 space-y-6">
+        <Form method="post" className="bg-white rounded-2xl shadow-2xl p-8 space-y-6">
           {/* Email Input */}
           <div>
             <label htmlFor="email" className="block text-sm font-semibold text-gray-900 mb-2">
@@ -47,6 +80,7 @@ export default function LoginPage() {
                 className="block w-full pl-12 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#d97757] focus:border-[#d97757] transition-all outline-none text-gray-900 placeholder-gray-400"
               />
             </div>
+          
           </div>
 
           {/* Password Input */}
@@ -78,7 +112,7 @@ export default function LoginPage() {
               </button>
             </div>
           </div>
-
+          {actionData?.error && <p className="text-red-500 text-sm p-1">{actionData.error}</p>}
           {/* Remember & Forgot */}
           <div className="flex items-center justify-between">
             <div className="flex items-center">
@@ -155,7 +189,7 @@ export default function LoginPage() {
               GitHub
             </button>
           </div>
-        </div>
+        </Form>
 
         {/* Sign Up Link */}
         <div className="text-center">
@@ -180,3 +214,5 @@ export default function LoginPage() {
     </div>
   );
 }
+
+

@@ -1,0 +1,23 @@
+services:
+  postgres:
+    image: postgres:latest
+    container_name: student-vault-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: root@123
+      POSTGRES_DB: student_vault_db
+    ports:
+      - "1127:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres_data:
+    driver: local
+

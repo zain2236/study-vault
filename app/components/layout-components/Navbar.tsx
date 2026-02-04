@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Menu, X, BookOpen } from 'lucide-react';
-import { Link } from 'react-router';
+import { Link, NavLink } from 'react-router';
 
 export function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -19,13 +19,13 @@ export function Navbar() {
 
             {/* Desktop Menu */}
             <div className="hidden md:flex items-center space-x-8">
-              <Link to="#features" className="text-gray-700 hover:text-[#d97757] transition-colors">Features</Link>
-              <Link to="#how-it-works" className="text-gray-700 hover:text-[#d97757] transition-colors">How It Works</Link>
-              <Link to="#benefits" className="text-gray-700 hover:text-[#d97757] transition-colors">Benefits</Link>
-              <Link to="/login" className="text-gray-700 hover:text-[#d97757] transition-colors">Login</Link>
-              <Link to="/sign-up" className="bg-[#d97757] text-white px-6 py-2 rounded-lg hover:bg-[#c66847] transition-all transform hover:scale-105">
+              <NavLink to="#features" className="text-gray-700 hover:text-[#d97757] transition-colors">Features</NavLink>
+              <NavLink to="#how-it-works" className="text-gray-700 hover:text-[#d97757] transition-colors">How It Works</NavLink>
+              <NavLink to="#benefits" className="text-gray-700 hover:text-[#d97757] transition-colors">Benefits</NavLink>
+              <NavLink to="/login" className="text-gray-700 hover:text-[#d97757] transition-colors">Login</NavLink>
+              <NavLink to="/sign-up" className="bg-[#d97757] text-white px-6 py-2 rounded-lg hover:bg-[#c66847] transition-all transform hover:scale-105">
                 Get Started
-              </Link>
+              </NavLink>
             </div>
 
             {/* Mobile Menu Button */}
