@@ -1,15 +1,27 @@
+/* Import Google Fonts FIRST - before everything else */
+@import url('https://fonts.googleapis.com/css2?family=Ovo&family=Outfit:wght@400;500;600;700;800&display=swap');
+
+/* Then import Tailwind */
 @import "tailwindcss";
 
 @theme {
-  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif,
+  /* Define custom font families */
+  --font-heading: "Outfit", ui-sans-serif, system-ui, sans-serif,
+    "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+  --font-body: "Ovo", ui-serif, serif,
     "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
 }
 
 html,
 body {
   @apply bg-white dark:bg-gray-950;
+  font-family: var(--font-body);
 
   @media (prefers-color-scheme: dark) {
     color-scheme: dark;
   }
+}
+
+h1, h2, h3, h4, h5, h6, button {
+  font-family: var(--font-heading);
 }

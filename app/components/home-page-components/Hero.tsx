@@ -3,7 +3,7 @@ import { ArrowRight, Upload, BookOpen, Download } from 'lucide-react';
 export function Hero() {
   return (
     <section className="relative overflow-hidden">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 lg:py-32">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-12 pb-20 lg:pt-16 lg:pb-24">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <div className="space-y-8">
               <div className="inline-block">
@@ -22,11 +22,11 @@ export function Hero() {
               </p>
 
               <div className="flex flex-col sm:flex-row gap-4">
-                <button className="bg-[#d97757] text-white px-8 py-4 rounded-lg hover:bg-[#c66847] transition-all transform hover:scale-105 flex items-center justify-center space-x-2 text-lg font-semibold shadow-lg">
+                <button className="flex items-center justify-center space-x-2 bg-gradient-to-r from-[#d97757] to-[#c66847] text-white px-8 py-4 rounded-lg font-heading font-semibold hover:shadow-md hover:shadow-[#d97757]/20 transition-all transform hover:scale-[1.02] text-lg">
                   <span>Start Organizing Now</span>
                   <ArrowRight className="w-5 h-5" />
                 </button>
-                <button className="border-2 border-gray-300 text-gray-700 px-8 py-4 rounded-lg hover:border-[#d97757] hover:text-[#d97757] transition-all flex items-center justify-center space-x-2 text-lg font-semibold">
+                <button className="border-1 border-gray-200 bg-gradient-to-br from-white to-[#fafafa] text-gray-600 px-8 py-4 rounded-lg hover:border-[#d97757] hover:text-[#d97757] transition-all flex items-center justify-center space-x-2 text-lg font-semibold">
                   <span>See How It Works</span>
                 </button>
               </div>
@@ -48,49 +48,61 @@ export function Hero() {
             </div>
 
             <div className="relative">
-              <div className="bg-white rounded-2xl shadow-2xl p-8 transform hover:scale-105 transition-all">
-                <div className="space-y-6">
-                  <div className="flex items-center space-x-4 p-4 bg-[#f5f5f0] rounded-lg">
-                    <div className="w-12 h-12 bg-[#d97757] rounded-lg flex items-center justify-center shrink-0">
-                      <Upload className="w-6 h-6 text-white" />
+              <div className="bg-gradient-to-br from-white to-[#fafafa] rounded-3xl shadow-2xl shadow-[#d97757]/10 p-8 transform  transition-all duration-300 border border-gray-100/50 relative overflow-hidden group">
+                {/* Animated background gradient */}
+                <div className="absolute inset-0 bg-gradient-to-br from-[#d97757]/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                
+                <div className="space-y-4 relative z-10">
+                  <div className="flex items-center space-x-4 p-5 bg-gradient-to-r from-[#f5f5f0] to-white rounded-xl border border-gray-100 hover:shadow-md hover:border-[#d97757]/20 transition-all duration-300 group/item">
+                    <div className="w-14 h-14 bg-gradient-to-br from-[#d97757] to-[#c66847] rounded-xl flex items-center justify-center shrink-0 shadow-lg shadow-[#d97757]/30 group-hover/item:scale-110 transition-transform">
+                      <Upload className="w-7 h-7 text-white" />
                     </div>
-                    <div className="flex-1">
-                      <div className="text-sm font-semibold text-gray-900">Data Structures Notes</div>
-                      <div className="text-xs text-gray-500">Semester 3 • Just now</div>
+                    <div className="flex-1 min-w-0">
+                      <div className="text-sm font-bold text-gray-900 mb-1">Data Structures Notes</div>
+                      <div className="text-xs text-gray-500 flex items-center gap-2">
+                        <span className="inline-block w-1.5 h-1.5 bg-green-500 rounded-full"></span>
+                        Semester 3 • Just now
+                      </div>
                     </div>
                   </div>
                   
-                  <div className="flex items-center space-x-4 p-4 bg-[#f5f5f0] rounded-lg">
-                    <div className="w-12 h-12 bg-[#d97757]/20 rounded-lg flex items-center justify-center shrink-0">
-                      <BookOpen className="w-6 h-6 text-[#d97757]" />
+                  <div className="flex items-center space-x-4 p-5 bg-gradient-to-r from-[#f5f5f0] to-white rounded-xl border border-gray-100 hover:shadow-md hover:border-[#d97757]/20 transition-all duration-300 group/item">
+                    <div className="w-14 h-14 bg-gradient-to-br from-[#d97757]/20 to-[#d97757]/10 rounded-xl flex items-center justify-center shrink-0 border-2 border-[#d97757]/30 group-hover/item:scale-110 transition-transform">
+                      <BookOpen className="w-7 h-7 text-[#d97757]" />
                     </div>
-                    <div className="flex-1">
-                      <div className="text-sm font-semibold text-gray-900">OS Assignment Solutions</div>
-                      <div className="text-xs text-gray-500">Semester 4 • 2 hours ago</div>
+                    <div className="flex-1 min-w-0">
+                      <div className="text-sm font-bold text-gray-900 mb-1">OS Assignment Solutions</div>
+                      <div className="text-xs text-gray-500 flex items-center gap-2">
+                        <span className="inline-block w-1.5 h-1.5 bg-blue-500 rounded-full"></span>
+                        Semester 4 • 2 hours ago
+                      </div>
                     </div>
                   </div>
 
-                  <div className="flex items-center space-x-4 p-4 bg-[#f5f5f0] rounded-lg">
-                    <div className="w-12 h-12 bg-[#d97757]/20 rounded-lg flex items-center justify-center shrink-0">
-                      <Download className="w-6 h-6 text-[#d97757]" />
+                  <div className="flex items-center space-x-4 p-5 bg-gradient-to-r from-[#f5f5f0] to-white rounded-xl border border-gray-100 hover:shadow-md hover:border-[#d97757]/20 transition-all duration-300 group/item">
+                    <div className="w-14 h-14 bg-gradient-to-br from-[#d97757]/20 to-[#d97757]/10 rounded-xl flex items-center justify-center shrink-0 border-2 border-[#d97757]/30 group-hover/item:scale-110 transition-transform">
+                      <Download className="w-7 h-7 text-[#d97757]" />
                     </div>
-                    <div className="flex-1">
-                      <div className="text-sm font-semibold text-gray-900">Database Quiz Prep</div>
-                      <div className="text-xs text-gray-500">Semester 5 • 1 day ago</div>
+                    <div className="flex-1 min-w-0">
+                      <div className="text-sm font-bold text-gray-900 mb-1">Database Quiz Prep</div>
+                      <div className="text-xs text-gray-500 flex items-center gap-2">
+                        <span className="inline-block w-1.5 h-1.5 bg-purple-500 rounded-full"></span>
+                        Semester 5 • 1 day ago
+                      </div>
                     </div>
                   </div>
                 </div>
 
-                <div className="mt-6 pt-6 border-t border-gray-200">
+                <div className="mt-6 pt-6 border-t border-gray-200 relative z-10">
                   <div className="flex items-center justify-between text-sm">
-                    <span className="text-gray-600">Your contribution impact</span>
-                    <span className="text-[#d97757] font-semibold">47 students helped</span>
+                    <span className="text-gray-600 font-medium">Your contribution impact</span>
+                    <span className="text-[#d97757] font-bold bg-[#d97757]/10 px-3 py-1 rounded-full">47 students helped</span>
                   </div>
                 </div>
               </div>
 
-              <div className="absolute -top-4 -right-4 w-24 h-24 bg-[#d97757]/10 rounded-full blur-2xl"></div>
-              <div className="absolute -bottom-8 -left-8 w-32 h-32 bg-[#d97757]/10 rounded-full blur-3xl"></div>
+              <div className="absolute -top-4 -right-4 w-24 h-24 bg-[#d97757]/10 rounded-full blur-2xl animate-pulse"></div>
+              <div className="absolute -bottom-8 -left-8 w-32 h-32 bg-[#d97757]/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }}></div>
             </div>
           </div>
         </div>

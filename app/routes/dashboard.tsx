@@ -8,7 +8,17 @@ import { useState } from 'react';
 import { Header } from '~/components/dashboard-components/Header';
 import { Sidebar } from '~/components/dashboard-components/Sidebar';
 import { ResourceCard } from '~/components/dashboard-components/ResourceCard';
+import { getUserId } from '~/utils/cookie-session/session.server';
+import type { Route } from './+types/dashboard';
+import { redirect } from 'react-router';
 
+
+export async function loader({request} : Route.LoaderArgs) {
+  const userId =  await getUserId(request)
+  if(!userId){
+    return redirect('/login')
+  }
+}
 export default function Dashboard() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [uploadModalOpen, setUploadModalOpen] = useState(false);

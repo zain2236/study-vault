@@ -1,56 +1,127 @@
 import { useState } from 'react';
-import { Menu, X, BookOpen } from 'lucide-react';
+import { Menu, X, BookOpen, Sparkles } from 'lucide-react';
 import { Link, NavLink } from 'react-router';
 
 export function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   return (
-    <nav className="bg-white shadow-sm sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            {/* Logo - Space reserved for image */}
-            <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-[#d97757] rounded-lg flex items-center justify-center">
+    <nav className="bg-white/95 backdrop-blur-sm shadow-sm sticky top-0 z-50 border-b border-gray-200/60">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex justify-between items-center h-16">
+          {/* Logo - Enhanced */}
+          <Link to="/" className="flex items-center space-x-3 group">
+            <div className="relative">
+              {/* Glow effect behind logo */}
+              <div className="absolute inset-0 bg-[#d97757] rounded-xl blur-lg opacity-20 group-hover:opacity-35 transition-opacity"></div>
+              {/* Logo icon */}
+              <div className="relative w-11 h-11 bg-gradient-to-br from-[#d97757] to-[#c66847] rounded-xl flex items-center justify-center transform group-hover:scale-110 transition-transform duration-300 shadow-md shadow-[#d97757]/20">
                 <BookOpen className="w-6 h-6 text-white" />
               </div>
-              <span className="text-2xl font-bold text-gray-900">StudyVault</span>
             </div>
+            <span className="text-2xl font-heading font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent group-hover:from-[#d97757] group-hover:to-[#c66847] transition-all duration-300">
+              StudyVault
+            </span>
+          </Link>
 
-            {/* Desktop Menu */}
-            <div className="hidden md:flex items-center space-x-8">
-              <NavLink to="#features" className="text-gray-700 hover:text-[#d97757] transition-colors">Features</NavLink>
-              <NavLink to="#how-it-works" className="text-gray-700 hover:text-[#d97757] transition-colors">How It Works</NavLink>
-              <NavLink to="#benefits" className="text-gray-700 hover:text-[#d97757] transition-colors">Benefits</NavLink>
-              <NavLink to="/login" className="text-gray-700 hover:text-[#d97757] transition-colors">Login</NavLink>
-              <NavLink to="/sign-up" className="bg-[#d97757] text-white px-6 py-2 rounded-lg hover:bg-[#c66847] transition-all transform hover:scale-105">
-                Get Started
-              </NavLink>
-            </div>
-
-            {/* Mobile Menu Button */}
-            <button 
-              className="md:hidden text-gray-700"
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+          {/* Desktop Menu */}
+          <div className="hidden md:flex items-center space-x-2">
+            <NavLink 
+              to="#features" 
+              className="px-4 py-2 rounded-lg font-heading font-medium text-gray-700 hover:text-[#d97757] hover:bg-[#f5f5f0] transition-all relative group"
             >
-              {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-            </button>
+              Features
+              <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-[#d97757] group-hover:w-full transition-all duration-300"></span>
+            </NavLink>
+            
+            <NavLink 
+              to="#how-it-works" 
+              className="px-4 py-2 rounded-lg font-heading font-medium text-gray-700 hover:text-[#d97757] hover:bg-[#f5f5f0] transition-all relative group"
+            >
+              How It Works
+              <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-[#d97757] group-hover:w-full transition-all duration-300"></span>
+            </NavLink>
+            
+            <NavLink 
+              to="#benefits" 
+              className="px-4 py-2 rounded-lg font-heading font-medium text-gray-700 hover:text-[#d97757] hover:bg-[#f5f5f0] transition-all relative group"
+            >
+              Benefits
+              <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-[#d97757] group-hover:w-full transition-all duration-300"></span>
+            </NavLink>
+            
+            <div className="h-6 w-px bg-gray-300 mx-2"></div>
+            
+            <NavLink 
+              to="/login" 
+              className="px-5 py-2 rounded-lg font-heading font-semibold text-gray-700 hover:text-[#d97757] hover:bg-[#f5f5f0] transition-all"
+            >
+              Login
+            </NavLink>
+            
+            <NavLink 
+              to="/sign-up" 
+              className="flex items-center space-x-2 bg-gradient-to-r from-[#d97757] to-[#c66847] text-white px-6 py-2.5 rounded-lg font-heading font-semibold hover:shadow-md hover:shadow-[#d97757]/20 transition-all transform hover:scale-[1.02]"
+            >
+              <span>Get Started</span>
+              <Sparkles className="w-4 h-4" />
+            </NavLink>
           </div>
 
-          {/* Mobile Menu */}
-          {mobileMenuOpen && (
-            <div className="md:hidden py-4 space-y-3 border-t">
-              <Link to="#features" className="block text-gray-700 hover:text-[#d97757] transition-colors">Features</Link>
-              <Link to="#how-it-works" className="block text-gray-700 hover:text-[#d97757] transition-colors">How It Works</Link>
-              <Link to="#benefits" className="block text-gray-700 hover:text-[#d97757] transition-colors">Benefits</Link>
-              <Link to="/login" className="block w-full text-left text-gray-700 hover:text-[#d97757] transition-colors">Login</Link>
-              <Link to="/sign-up" className="w-full bg-[#d97757] text-white px-6 py-2 rounded-lg hover:bg-[#c66847] transition-all">
-                Get Started
-              </Link>
-            </div>
-          )}
+          {/* Mobile Menu Button */}
+          <button 
+            className="md:hidden text-gray-700 hover:text-[#d97757] transition-colors p-2 hover:bg-[#f5f5f0] rounded-lg"
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+          >
+            {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+          </button>
         </div>
-      </nav>
+
+        {/* Mobile Menu - Enhanced */}
+        {mobileMenuOpen && (
+          <div className="md:hidden py-4 space-y-2 border-t border-gray-100 animate-fadeIn">
+            <Link 
+              to="#features" 
+              className="block px-4 py-3 rounded-lg text-gray-700 hover:text-[#d97757] hover:bg-[#f5f5f0] transition-all font-heading font-medium"
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              Features
+            </Link>
+            <Link 
+              to="#how-it-works" 
+              className="block px-4 py-3 rounded-lg text-gray-700 hover:text-[#d97757] hover:bg-[#f5f5f0] transition-all font-heading font-medium"
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              How It Works
+            </Link>
+            <Link 
+              to="#benefits" 
+              className="block px-4 py-3 rounded-lg text-gray-700 hover:text-[#d97757] hover:bg-[#f5f5f0] transition-all font-heading font-medium"
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              Benefits
+            </Link>
+            
+            <div className="h-px bg-gray-200 my-2"></div>
+            
+            <Link 
+              to="/login" 
+              className="block px-4 py-3 rounded-lg text-gray-700 hover:text-[#d97757] hover:bg-[#f5f5f0] transition-all font-heading font-semibold"
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              Login
+            </Link>
+            <Link 
+              to="/sign-up" 
+              className="flex items-center justify-center space-x-2 bg-gradient-to-r from-[#d97757] to-[#c66847] text-white px-6 py-3 rounded-lg font-heading font-semibold hover:shadow-md hover:shadow-[#d97757]/20 transition-all mx-2"
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              <span>Get Started</span>
+              <Sparkles className="w-4 h-4" />
+            </Link>
+          </div>
+        )}
+      </div>
+    </nav>
   );
 }
-
