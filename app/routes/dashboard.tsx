@@ -1,17 +1,22 @@
+import type { Route } from './+types/dashboard';
+import { redirect } from 'react-router';
+import { useState } from 'react';
 import { 
   Upload, 
   X,
   Plus,
   Filter,
 } from 'lucide-react';
-import { useState } from 'react';
-import { Header } from '~/components/dashboard-components/Header';
-import { Sidebar } from '~/components/dashboard-components/Sidebar';
+
 import { ResourceCard } from '~/components/dashboard-components/ResourceCard';
 import { getUserId } from '~/utils/cookie-session/session.server';
-import type { Route } from './+types/dashboard';
-import { redirect } from 'react-router';
 
+export function meta({}: Route.MetaArgs) {
+  return [
+    { title: "Dashboard" },
+    { name: "description", content: "Welcome to Your personal Dashboard!" },
+  ];
+}
 
 export async function loader({request} : Route.LoaderArgs) {
   const userId =  await getUserId(request)
@@ -20,7 +25,6 @@ export async function loader({request} : Route.LoaderArgs) {
   }
 }
 export default function Dashboard() {
-  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [uploadModalOpen, setUploadModalOpen] = useState(false);
 
   // LOGIC: Fetch user's uploaded resources from database
@@ -85,18 +89,9 @@ export default function Dashboard() {
   );
 
   return (
-    <div className="min-h-screen bg-[#f5f5f0]">
-      {/* Top Navigation Bar */}
-      <Header sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
-
-      <div className="flex">
-        {/* Sidebar */}
-        <Sidebar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
-
-        {/* Main Content */}
-        <main className="flex-1 p-4 lg:p-8">
-          {/* Header with Upload Button */}
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 gap-4">
+    <>
+      {/* Header with Upload Button */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 gap-4">
             <div>
               <h2 className="text-2xl font-bold text-gray-900">My Resources</h2>
               <p className="text-gray-600 mt-1">Manage and organize your uploaded materials</p>
@@ -129,8 +124,6 @@ export default function Dashboard() {
                 </button>
             </div>}
           </div>
-        </main>
-      </div>
 
       {/* Upload Modal */}
       {uploadModalOpen && (
@@ -229,6 +222,6 @@ export default function Dashboard() {
           </div>
         </div>
       )}
-    </div>
+    </>
   );
 }

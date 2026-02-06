@@ -1,15 +1,26 @@
 import { Outlet } from "react-router";
 import { Footer } from "~/components/layout-components/Footer";
 import { Navbar } from "~/components/layout-components/Navbar";
+import type { Route } from "./+types/main-layout";
+import { getUserId } from "~/utils/cookie-session/session.server";
 
-export default function MainLayout({ children }: { children: React.ReactNode }) {
+export async function loader({request} : Route.LoaderArgs) {
+    const userId = await getUserId(request)
+    let isLoggedIn ;
+    if(userId)  {
+       return isLoggedIn = true
+    }
+
+    return isLoggedIn= false
+}
+export default function MainLayout({loaderData } : Route.ComponentProps ) {
     return (
         <>
-            <Navbar />
-            <main className="min-h-screen bg-[#f5f5f0]">
-                {children}
-            </main>
-            <Footer />
+        <Navbar isLoggedIn = {loaderData}/>
+        <main>
+        <Outlet />
+        </main>
+        <Footer />
         </>
     )
 }

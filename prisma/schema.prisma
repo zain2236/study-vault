@@ -1,8 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
 generator client {
   provider = "prisma-client"
@@ -14,10 +9,25 @@ datasource db {
 }
 
 model User {
-  id  Int @id @default(autoincrement())
-  user_name String 
-  email String @unique
-  password String
-  created_at DateTime @default(now())
-  updated_at DateTime @updatedAt
+  id         Int        @id @default(autoincrement())
+  user_name  String
+  email      String     @unique
+  password   String
+  created_at DateTime   @default(now())
+  updated_at DateTime   @updatedAt
+  resources  Resource[]
+}
+
+model Resource {
+  Id            Int      @id @default(autoincrement())
+  title         String
+  description   String
+  semester      Int
+  resource_type String
+  file_path     String
+  file_size     BigInt
+  user_id       Int
+  user          User     @relation(fields: [user_id], references: [id])
+  created_at    DateTime @default(now())
+  updated_at    DateTime @updatedAt
 }

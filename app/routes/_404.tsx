@@ -93,7 +93,7 @@ export default function NotFoundPage() {
             <p className="text-sm text-gray-500 font-body mb-4">Quick Links:</p>
             <div className="flex flex-wrap justify-center gap-3">
               <Link 
-                to="/dashboard" 
+                to="/user/dashboard" 
                 className="px-4 py-2 bg-white text-gray-700 rounded-lg hover:bg-[#d97757] hover:text-white transition-all text-sm font-heading font-medium shadow-sm"
               >
                 Dashboard

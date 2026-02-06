@@ -1,11 +1,20 @@
 import type { Route } from './+types/sign-up';
 import { useState } from 'react';
-import { Form, Link, useNavigation, useActionData } from 'react-router';
+import { Form, Link, useNavigation, useActionData, redirect } from 'react-router';
+import { Mail, Lock, User, ArrowRight, Eye, EyeOff, BookOpen } from 'lucide-react';
+
 import prisma from '../../utils/prisma.server';
 import { hashPassword } from '../../utils/password/password.server';
+import { createLoginSession, getUserId } from '~/utils/cookie-session/session.server';
 
-import { Mail, Lock, User, ArrowRight, Eye, EyeOff, BookOpen } from 'lucide-react';
-import { createLoginSession } from '~/utils/cookie-session/session.server';
+// Check if user is already logged in ?
+export async function loader({request} : Route.LoaderArgs) {
+  const userId = await getUserId(request) 
+  if(userId) {
+    return redirect('/dashboard')
+  }
+  return null 
+}
 
 export async function action({ request }: Route.ActionArgs) {
   const formData = await request.formData()

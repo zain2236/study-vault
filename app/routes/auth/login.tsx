@@ -1,14 +1,24 @@
-import type { ActionFunctionArgs } from 'react-router';
-import { Form, Link, useActionData } from 'react-router';
+import type { Route } from './+types/login';
+import { Form, Link, redirect, useActionData } from 'react-router';
 import { useState } from 'react';
-import { createLoginSession } from '../../utils/cookie-session/session.server';
-import prisma from '../../utils/prisma.server';
-
 import { BookOpen, Mail, Lock, ArrowRight, Eye, EyeOff } from 'lucide-react';
+
+import { createLoginSession, getUserId } from '../../utils/cookie-session/session.server';
+import prisma from '../../utils/prisma.server';
 import { verifyPassword } from '~/utils/password/password.server';
 
 
-export async function action({ request }: ActionFunctionArgs) {
+export async function loader ({request} :Route.LoaderArgs) {
+  const userId = await getUserId(request)
+
+  if(userId){
+    return redirect('/dashboard')
+  }
+
+  return null
+}
+
+export async function action({ request }: Route.ActionArgs) {
   const form = await request.formData();
   const email = form.get('email');
   const password = form.get('password');
