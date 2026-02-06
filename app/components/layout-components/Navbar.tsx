@@ -8,7 +8,7 @@ export function Navbar({ isLoggedIn } : any) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   return (
-    <nav className="bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm shadow-sm dark:shadow-gray-900/20 sticky top-0 z-50 border-b border-gray-200/60 dark:border-gray-800/50">
+    <nav className="bg-white/60 dark:bg-gray-800/60 backdrop-blur-sm shadow-xs dark:shadow-gray-800/20 sticky top-0 z-50 border-b border-gray-100/60 dark:border-gray-700/50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo - Enhanced */}
@@ -21,7 +21,7 @@ export function Navbar({ isLoggedIn } : any) {
                 <img src="/assests/fav-icon.png" alt="" />
               </div>
             </div>
-            <span className="text-xl font-heading font-bold text-[#d97757] group-hover:text-[#c66847] transition-all duration-300">
+            <span className="text-xl font-heading font-bold dark:text-white text-[#d97757] group-hover:text-[#c66847] transition-all duration-300">
               StudyVault
             </span>
           </Link>
@@ -30,7 +30,7 @@ export function Navbar({ isLoggedIn } : any) {
           <div className="hidden md:flex items-center space-x-2">
             <NavLink
               to="#features"
-              className="px-4 py-2 rounded-lg font-heading font-medium text-gray-700 dark:text-gray-200 hover:text-[#d97757] dark:hover:text-[#d97757] hover:bg-[#f5f5f0] dark:hover:bg-gray-800/50 transition-all relative group"
+              className="px-4 py-2 rounded-lg font-heading font-medium text-gray-700 dark:text-gray-100 hover:text-[#d97757] dark:hover:text-[#d97757] hover:bg-[#f5f5f0] dark:hover:bg-gray-700/50 transition-all relative group"
             >
               Features
               <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-[#d97757] group-hover:w-full transition-all duration-300"></span>
@@ -38,7 +38,7 @@ export function Navbar({ isLoggedIn } : any) {
 
             <NavLink
               to="#how-it-works"
-              className="px-4 py-2 rounded-lg font-heading font-medium text-gray-700 dark:text-gray-200 hover:text-[#d97757] dark:hover:text-[#d97757] hover:bg-[#f5f5f0] dark:hover:bg-gray-800/50 transition-all relative group"
+              className="px-4 py-2 rounded-lg font-heading font-medium text-gray-700 dark:text-gray-100 hover:text-[#d97757] dark:hover:text-[#d97757] hover:bg-[#f5f5f0] dark:hover:bg-gray-700/50 transition-all relative group"
             >
               How It Works
               <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-[#d97757] group-hover:w-full transition-all duration-300"></span>
@@ -46,13 +46,13 @@ export function Navbar({ isLoggedIn } : any) {
 
             <NavLink
               to="#benefits"
-              className="px-4 py-2 rounded-lg font-heading font-medium text-gray-700 dark:text-gray-200 hover:text-[#d97757] dark:hover:text-[#d97757] hover:bg-[#f5f5f0] dark:hover:bg-gray-800/50 transition-all relative group"
+              className="px-4 py-2 rounded-lg font-heading font-medium text-gray-700 dark:text-gray-100 hover:text-[#d97757] dark:hover:text-[#d97757] hover:bg-[#f5f5f0] dark:hover:bg-gray-700/50 transition-all relative group"
             >
               Benefits
               <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-[#d97757] group-hover:w-full transition-all duration-300"></span>
             </NavLink>
 
-            <div className="h-6 w-px bg-gray-300 dark:bg-gray-700/50 mx-2"></div>
+            <div className="h-6 w-px bg-gray-300 dark:bg-gray-700 mx-2"></div>
 
             {/* // If user is logged in then show dashboard button  */}
 
@@ -65,7 +65,7 @@ export function Navbar({ isLoggedIn } : any) {
             </NavLink>) : (<div className="hidden md:flex items-center space-x-2">
               <NavLink
                 to="/login"
-                className="px-5 py-2 rounded-lg font-heading font-semibold text-gray-700 dark:text-gray-200 hover:text-[#d97757] dark:hover:text-[#d97757] hover:bg-[#f5f5f0] dark:hover:bg-gray-800/50 transition-all"
+                className="px-5 py-2 rounded-lg font-heading font-semibold text-gray-700 dark:text-gray-100 hover:text-[#d97757] dark:hover:text-[#d97757] hover:bg-[#f5f5f0] dark:hover:bg-gray-700/50 transition-all"
               >
                 Login
               </NavLink>
@@ -83,7 +83,7 @@ export function Navbar({ isLoggedIn } : any) {
 
           {/* Mobile Menu Button */}
           <button
-            className="md:hidden text-gray-700 dark:text-gray-200 hover:text-[#d97757] dark:hover:text-[#d97757] transition-colors p-2 hover:bg-[#f5f5f0] dark:hover:bg-gray-800/50 rounded-lg"
+            className="md:hidden text-gray-700 dark:text-gray-100 hover:text-[#d97757] dark:hover:text-[#d97757] transition-colors p-2 hover:bg-[#f5f5f0] dark:hover:bg-gray-700/50 rounded-lg"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
           >
             {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
@@ -92,30 +92,30 @@ export function Navbar({ isLoggedIn } : any) {
 
         {/* Mobile Menu - Enhanced */}
         {mobileMenuOpen && (
-          <div className="md:hidden py-4 space-y-2 border-t border-gray-100 dark:border-gray-800/50 animate-fadeIn">
+          <div className="md:hidden py-4 space-y-2 border-t border-gray-100 dark:border-gray-700 animate-fadeIn">
             <Link
               to="#features"
-              className="block px-4 py-3 rounded-lg text-gray-700 dark:text-gray-200 hover:text-[#d97757] dark:hover:text-[#d97757] hover:bg-[#f5f5f0] dark:hover:bg-gray-800/50 transition-all font-heading font-medium"
+              className="block px-4 py-3 rounded-lg text-gray-700 dark:text-gray-100 hover:text-[#d97757] dark:hover:text-[#d97757] hover:bg-[#f5f5f0] dark:hover:bg-gray-700/50 transition-all font-heading font-medium"
               onClick={() => setMobileMenuOpen(false)}
             >
               Features
             </Link>
             <Link
               to="#how-it-works"
-              className="block px-4 py-3 rounded-lg text-gray-700 dark:text-gray-200 hover:text-[#d97757] dark:hover:text-[#d97757] hover:bg-[#f5f5f0] dark:hover:bg-gray-800/50 transition-all font-heading font-medium"
+              className="block px-4 py-3 rounded-lg text-gray-700 dark:text-gray-100 hover:text-[#d97757] dark:hover:text-[#d97757] hover:bg-[#f5f5f0] dark:hover:bg-gray-700/50 transition-all font-heading font-medium"
               onClick={() => setMobileMenuOpen(false)}
             >
               How It Works
             </Link>
             <Link
               to="#benefits"
-              className="block px-4 py-3 rounded-lg text-gray-700 dark:text-gray-200 hover:text-[#d97757] dark:hover:text-[#d97757] hover:bg-[#f5f5f0] dark:hover:bg-gray-800/50 transition-all font-heading font-medium"
+              className="block px-4 py-3 rounded-lg text-gray-700 dark:text-gray-100 hover:text-[#d97757] dark:hover:text-[#d97757] hover:bg-[#f5f5f0] dark:hover:bg-gray-700/50 transition-all font-heading font-medium"
               onClick={() => setMobileMenuOpen(false)}
             >
               Benefits
             </Link>
 
-            <div className="h-px bg-gray-200 dark:bg-gray-700/50 my-2"></div>
+            <div className="h-px bg-gray-200 dark:bg-gray-700 my-2"></div>
 
               {isLoggedIn ? ( <Link
               to="/user/dashboard"
@@ -127,7 +127,7 @@ export function Navbar({ isLoggedIn } : any) {
             </Link>) : (<div>
             <Link
               to="/login"
-              className="block px-4 py-3 rounded-lg text-gray-700 dark:text-gray-200 hover:text-[#d97757] dark:hover:text-[#d97757] hover:bg-[#f5f5f0] dark:hover:bg-gray-800/50 transition-all font-heading font-semibold"
+              className="block px-4 py-3 rounded-lg text-gray-700 dark:text-gray-100 hover:text-[#d97757] dark:hover:text-[#d97757] hover:bg-[#f5f5f0] dark:hover:bg-gray-700/50 transition-all font-heading font-semibold"
               onClick={() => setMobileMenuOpen(false)}
             >
               Login

@@ -2,7 +2,7 @@ import { BookOpen } from 'lucide-react';
 
 export function Footer() {
   return (
-    <footer className="bg-gray-800 text-white py-12">
+    <footer className="bg-gray-800 dark:bg-gray-900 text-white py-12 border-t border-gray-700/50 dark:border-gray-700">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid md:grid-cols-4 gap-8">
             <div>
@@ -10,16 +10,16 @@ export function Footer() {
                 <div className="w-10 h-10 bg-[#d97757] rounded-lg flex items-center justify-center">
                   <BookOpen className="w-6 h-6 text-white" />
                 </div>
-                <span className="text-xl font-bold">StudyVault</span>
+                <span className="text-xl font-bold text-white dark:text-gray-50">StudyVault</span>
               </div>
-              <p className="text-gray-400 text-sm">
+              <p className="text-gray-400 dark:text-gray-300 text-sm">
                 Your academic resources, organized and accessible. Built by students, for students.
               </p>
             </div>
 
             <div>
-              <h4 className="font-semibold mb-4">Product</h4>
-              <ul className="space-y-2 text-gray-400 text-sm">
+              <h4 className="font-semibold mb-4 text-white dark:text-gray-50">Product</h4>
+              <ul className="space-y-2 text-gray-400 dark:text-gray-300 text-sm">
                 <li><a href="#" className="hover:text-[#d97757] transition-colors">Features</a></li>
                 <li><a href="#" className="hover:text-[#d97757] transition-colors">How It Works</a></li>
                 <li><a href="#" className="hover:text-[#d97757] transition-colors">Pricing</a></li>
@@ -27,8 +27,8 @@ export function Footer() {
             </div>
 
             <div>
-              <h4 className="font-semibold mb-4">Support</h4>
-              <ul className="space-y-2 text-gray-400 text-sm">
+              <h4 className="font-semibold mb-4 text-white dark:text-gray-50">Support</h4>
+              <ul className="space-y-2 text-gray-400 dark:text-gray-300 text-sm">
                 <li><a href="#" className="hover:text-[#d97757] transition-colors">Help Center</a></li>
                 <li><a href="#" className="hover:text-[#d97757] transition-colors">Contact Us</a></li>
                 <li><a href="#" className="hover:text-[#d97757] transition-colors">Privacy Policy</a></li>
@@ -36,8 +36,8 @@ export function Footer() {
             </div>
 
             <div>
-              <h4 className="font-semibold mb-4">Connect</h4>
-              <ul className="space-y-2 text-gray-400 text-sm">
+              <h4 className="font-semibold mb-4 text-white dark:text-gray-50">Connect</h4>
+              <ul className="space-y-2 text-gray-400 dark:text-gray-300 text-sm">
                 <li><a href="#" className="hover:text-[#d97757] transition-colors">Twitter</a></li>
                 <li><a href="#" className="hover:text-[#d97757] transition-colors">Discord</a></li>
                 <li><a href="#" className="hover:text-[#d97757] transition-colors">GitHub</a></li>
@@ -45,7 +45,7 @@ export function Footer() {
             </div>
           </div>
 
-          <div className="border-t border-gray-800 mt-12 pt-8 text-center text-gray-400 text-sm">
+          <div className="border-t border-gray-700 dark:border-gray-700 mt-12 pt-8 text-center text-gray-400 dark:text-gray-400 text-sm">
             <p>&copy; 2026 StudyVault. All rights reserved. Made with ❤️ for students.</p>
           </div>
         </div>
