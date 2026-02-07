@@ -6,12 +6,12 @@ import { getUserId } from "~/utils/cookie-session/session.server";
 
 export async function loader({request} : Route.LoaderArgs) {
     const userId = await getUserId(request)
-    let isLoggedIn ;
+    let isLoggedIn = false;
     if(userId)  {
        return isLoggedIn = true
     }
 
-    return isLoggedIn= false
+    return isLoggedIn 
 }
 export default function MainLayout({loaderData } : Route.ComponentProps ) {
     return (

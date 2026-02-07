@@ -73,7 +73,7 @@ export default function NotFoundPage() {
           <div className="flex flex-col sm:flex-row gap-4 justify-center pt-8">
             <button 
               onClick={() => navigate(-1)}
-              className="group flex items-center justify-center space-x-2 bg-gradient-to-r from-[#d97757] to-[#c66847] text-white px-8 py-4 rounded-lg font-heading font-semibold hover:shadow-md hover:shadow-[#d97757]/20 transition-all transform hover:scale-[1.02]"
+              className="group flex items-center justify-center space-x-2 bg-linear-to-r from-[#d97757] to-[#c66847] text-white px-8 py-4 rounded-lg font-heading font-semibold hover:shadow-md hover:shadow-[#d97757]/20 transition-all transform hover:scale-[1.02]"
             >
               <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
               <span>Go Back</span>

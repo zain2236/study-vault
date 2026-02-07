@@ -1,81 +1,96 @@
-import { BookOpen, Search, Bell, Settings, Menu } from 'lucide-react';
+import { Search, Menu } from 'lucide-react';
+import { Link } from 'react-router';
 
 interface HeaderProps {
   sidebarOpen: boolean;
+  userInfo: {
+    userName: string;
+    profileImg?: string | null;
+  };
   setSidebarOpen: (open: boolean) => void;
 }
 
-export function Header({ sidebarOpen, setSidebarOpen }: HeaderProps) {
+export function Header({ sidebarOpen, setSidebarOpen , userInfo }: HeaderProps) {
   return (
-    <nav className="bg-white shadow-sm sticky top-0 z-40">
+    <nav className="bg-white dark:bg-gray-700 shadow-sm dark:shadow-gray-900/20 sticky top-0 z-40 border-b border-gray-200/60 dark:border-gray-600/50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo & Mobile Menu Button */}
           <div className="flex items-center space-x-4">
             <button
               onClick={() => setSidebarOpen(!sidebarOpen)}
-              className="lg:hidden text-gray-700 hover:text-[#d97757] transition-colors"
+              className="lg:hidden text-gray-700 dark:text-gray-300 hover:text-[#d97757] transition-colors"
             >
               <Menu className="w-6 h-6" />
             </button>
             
-            <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-[#d97757] rounded-lg flex items-center justify-center">
-                <BookOpen className="w-6 h-6 text-white" />
+            <Link to="/user/dashboard" className="flex items-center space-x-2 group">
+              <div className="relative">
+                {/* Glow effect behind logo */}
+                <div className="absolute inset-0 bg-[#d97757] rounded-xl blur-lg opacity-20 group-hover:opacity-35 transition-opacity"></div>
+                {/* Logo icon */}
+                <div className="relative w-9 h-9 rounded-xl flex items-center justify-center transform group-hover:scale-110 transition-transform duration-300">
+                  <img src="/assests/fav-icon.png" alt="logo" className="w-full h-full object-contain" />
+                </div>
               </div>
-              <span className="text-xl font-bold text-gray-900 hidden sm:block">Dashbord</span>
-            </div>
+              <span className="text-xl font-heading font-bold dark:text-white text-[#d97757] group-hover:text-[#c66847] transition-all duration-300 hidden sm:block">
+                Dashboard
+              </span>
+            </Link>
           </div>
 
           {/* Search Bar - Desktop */}
           <div className="hidden md:flex flex-1 max-w-lg mx-8">
             <div className="relative w-full">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <Search className="h-5 w-5 text-gray-400" />
+                <Search className="h-5 w-5 text-gray-400 dark:text-gray-500" />
               </div>
               <input
                 type="text"
                 placeholder="Search resources..."
-                className="block w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#d97757] focus:border-[#d97757] transition-all outline-none"
+                className="block w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-600 rounded-lg focus:ring-2 focus:ring-[#d97757] focus:border-[#d97757] transition-all outline-none text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-400"
               />
             </div>
           </div>
 
           {/* Right Side Actions */}
-          <div className="flex items-center space-x-4">
-            <button className="relative text-gray-700 hover:text-[#d97757] transition-colors">
-              <Bell className="w-6 h-6" />
-              <span className="absolute -top-1 -right-1 w-4 h-4 bg-[#d97757] rounded-full text-xs text-white flex items-center justify-center">3</span>
-            </button>
-            
-            <button className="text-gray-700 hover:text-[#d97757] transition-colors">
-              <Settings className="w-6 h-6" />
-            </button>
-
-            {/* User Avatar */}
-            <div className="flex items-center space-x-2 cursor-pointer group">
-              <div className="w-9 h-9 bg-[#d97757] rounded-full flex items-center justify-center text-white font-semibold">
-                JD
-              </div>
-              <span className="hidden lg:block text-sm font-medium text-gray-700 group-hover:text-[#d97757] transition-colors">
-                John Doe
-              </span>
+          <div className="flex items-center space-x-3">
+           
+            {/* User Name */}
+            <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+              {userInfo.userName}
+            </span>
+             {/* User Avatar */}
+             <div className="w-10 h-10 rounded-full flex items-center justify-center overflow-hidden bg-[#d97757] text-white font-semibold text-sm">
+              {userInfo.profileImg ? (
+                <img 
+                  src={userInfo.profileImg} 
+                  alt={userInfo.userName}
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <span>
+                  {userInfo.userName?.split(' ')[0]?.charAt(0)?.toUpperCase() || 'U'}
+                </span>
+              )}
             </div>
           </div>
         </div>
       </div>
 
       {/* Mobile Search */}
-      <div className="md:hidden px-4 pb-4">
-        <div className="relative">
-          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-            <Search className="h-5 w-5 text-gray-400" />
+      <div className="md:hidden px-4 sm:px-6 lg:px-8 pb-4">
+        <div className="max-w-7xl mx-auto">
+          <div className="relative">
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <Search className="h-5 w-5 text-gray-400 dark:text-gray-500" />
+            </div>
+            <input
+              type="text"
+              placeholder="Search resources..."
+              className="block w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-600 rounded-lg focus:ring-2 focus:ring-[#d97757] focus:border-[#d97757] transition-all outline-none text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-400"
+            />
           </div>
-          <input
-            type="text"
-            placeholder="Search resources..."
-            className="block w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#d97757] focus:border-[#d97757] transition-all outline-none"
-          />
         </div>
       </div>
     </nav>

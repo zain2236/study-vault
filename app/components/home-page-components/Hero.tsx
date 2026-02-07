@@ -22,11 +22,11 @@ export function Hero() {
               </p>
 
               <div className="flex flex-col sm:flex-row gap-4">
-                <button className="flex items-center justify-center space-x-2 bg-gradient-to-r from-[#d97757] to-[#c66847] text-white px-8 py-4 rounded-lg font-heading font-semibold hover:shadow-md hover:shadow-[#d97757]/20 transition-all transform hover:scale-[1.02] text-lg">
+                <button className="flex items-center justify-center space-x-2 bg-linear-to-r from-[#d97757] to-[#c66847] text-white px-8 py-4 rounded-lg font-heading font-semibold hover:shadow-md hover:shadow-[#d97757]/20 transition-all transform hover:scale-[1.02] text-lg">
                   <span>Start Organizing Now</span>
                   <ArrowRight className="w-5 h-5" />
                 </button>
-                <button className="border-1 border-gray-200 dark:border-gray-600 bg-gradient-to-br from-white to-[#fafafa] dark:from-gray-700 dark:to-gray-700/80 text-gray-600 dark:text-gray-100 px-8 py-4 rounded-lg hover:border-[#d97757] hover:text-[#d97757] transition-all flex items-center justify-center space-x-2 text-lg font-semibold">
+                <button className="border border-gray-200 dark:border-gray-600 bg-linear-to-br from-white to-[#fafafa] dark:from-gray-700 dark:to-gray-700/80 text-gray-600 dark:text-gray-100 px-8 py-4 rounded-lg hover:border-[#d97757] hover:text-[#d97757] transition-all flex items-center justify-center space-x-2 text-lg font-semibold">
                   <span>See How It Works</span>
                 </button>
               </div>
@@ -48,13 +48,13 @@ export function Hero() {
             </div>
 
             <div className="relative">
-              <div className="bg-gradient-to-br from-white to-[#fafafa] dark:from-gray-700 dark:to-gray-700/90 rounded-3xl shadow-2xl shadow-[#d97757]/10 dark:shadow-gray-900/50 p-8 transform transition-all duration-300 border border-gray-100/50 dark:border-gray-600/50 relative overflow-hidden group">
+              <div className="bg-linear-to-br from-white to-[#fafafa] dark:from-gray-700 dark:to-gray-700/90 rounded-3xl shadow-2xl shadow-[#d97757]/10 dark:shadow-gray-900/50 p-8 transform transition-all duration-300 border border-gray-100/50 dark:border-gray-600/50 relative overflow-hidden group">
                 {/* Animated background gradient */}
-                <div className="absolute inset-0 bg-gradient-to-br from-[#d97757]/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                <div className="absolute inset-0 bg-linear-to-br from-[#d97757]/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                 
                 <div className="space-y-4 relative z-10">
-                  <div className="flex items-center space-x-4 p-5 bg-gradient-to-r from-[#f5f5f0] to-white dark:from-gray-600 dark:to-gray-600/80 rounded-xl border border-gray-100 dark:border-gray-600/50 hover:shadow-md hover:border-[#d97757]/20 dark:hover:border-[#d97757]/30 transition-all duration-300 group/item">
-                    <div className="w-14 h-14 bg-gradient-to-br from-[#d97757] to-[#c66847] rounded-xl flex items-center justify-center shrink-0 shadow-lg shadow-[#d97757]/30 group-hover/item:scale-110 transition-transform">
+                  <div className="flex items-center space-x-4 p-5 bg-linear-to-r from-[#f5f5f0] to-white dark:from-gray-600 dark:to-gray-600/80 rounded-xl border border-gray-100 dark:border-gray-600/50 hover:shadow-md hover:border-[#d97757]/20 dark:hover:border-[#d97757]/30 transition-all duration-300 group/item">
+                    <div className="w-14 h-14 bg-linear-to-br from-[#d97757] to-[#c66847] rounded-xl flex items-center justify-center shrink-0 shadow-lg shadow-[#d97757]/30 group-hover/item:scale-110 transition-transform">
                       <Upload className="w-7 h-7 text-white" />
                     </div>
                     <div className="flex-1 min-w-0">
@@ -66,8 +66,8 @@ export function Hero() {
                     </div>
                   </div>
                   
-                  <div className="flex items-center space-x-4 p-5 bg-gradient-to-r from-[#f5f5f0] to-white dark:from-gray-600 dark:to-gray-600/80 rounded-xl border border-gray-100 dark:border-gray-600/50 hover:shadow-md hover:border-[#d97757]/20 dark:hover:border-[#d97757]/30 transition-all duration-300 group/item">
-                    <div className="w-14 h-14 bg-gradient-to-br from-[#d97757]/20 to-[#d97757]/10 dark:from-[#d97757]/30 dark:to-[#d97757]/20 rounded-xl flex items-center justify-center shrink-0 border-2 border-[#d97757]/30 group-hover/item:scale-110 transition-transform">
+                  <div className="flex items-center space-x-4 p-5 bg-linear-to-r from-[#f5f5f0] to-white dark:from-gray-600 dark:to-gray-600/80 rounded-xl border border-gray-100 dark:border-gray-600/50 hover:shadow-md hover:border-[#d97757]/20 dark:hover:border-[#d97757]/30 transition-all duration-300 group/item">
+                    <div className="w-14 h-14 bg-linear-to-br from-[#d97757]/20 to-[#d97757]/10 dark:from-[#d97757]/30 dark:to-[#d97757]/20 rounded-xl flex items-center justify-center shrink-0 border-2 border-[#d97757]/30 group-hover/item:scale-110 transition-transform">
                       <BookOpen className="w-7 h-7 text-[#d97757]" />
                     </div>
                     <div className="flex-1 min-w-0">
@@ -79,8 +79,8 @@ export function Hero() {
                     </div>
                   </div>
 
-                  <div className="flex items-center space-x-4 p-5 bg-gradient-to-r from-[#f5f5f0] to-white dark:from-gray-600 dark:to-gray-600/80 rounded-xl border border-gray-100 dark:border-gray-600/50 hover:shadow-md hover:border-[#d97757]/20 dark:hover:border-[#d97757]/30 transition-all duration-300 group/item">
-                    <div className="w-14 h-14 bg-gradient-to-br from-[#d97757]/20 to-[#d97757]/10 dark:from-[#d97757]/30 dark:to-[#d97757]/20 rounded-xl flex items-center justify-center shrink-0 border-2 border-[#d97757]/30 group-hover/item:scale-110 transition-transform">
+                  <div className="flex items-center space-x-4 p-5 bg-linear-to-r from-[#f5f5f0] to-white dark:from-gray-600 dark:to-gray-600/80 rounded-xl border border-gray-100 dark:border-gray-600/50 hover:shadow-md hover:border-[#d97757]/20 dark:hover:border-[#d97757]/30 transition-all duration-300 group/item">
+                    <div className="w-14 h-14 bg-linear-to-br from-[#d97757]/20 to-[#d97757]/10 dark:from-[#d97757]/30 dark:to-[#d97757]/20 rounded-xl flex items-center justify-center shrink-0 border-2 border-[#d97757]/30 group-hover/item:scale-110 transition-transform">
                       <Download className="w-7 h-7 text-[#d97757]" />
                     </div>
                     <div className="flex-1 min-w-0">

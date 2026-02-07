@@ -1,24 +1,33 @@
-import { File, FileText, MoreVertical, BookOpen, Calendar, Download } from 'lucide-react';
+import { File, FileText, BookOpen, Calendar, Download, User } from 'lucide-react';
 import { memo } from 'react';
 
-interface Resource {
+interface BrowseResource {
   id: number;
   title: string;
   subject: string;
   semester: number;
   type: string;
-  file_type: string;
-  file_size: BigInt;
-  user_id: number;
-  created_at: Date;
-  updated_at: Date;
+  fileType: string;
+  size: string;
+  uploadedBy: string;
+  uploadedDate: string;
+  downloads: number;
 }
 
-interface ResourceCardProps {
-  resource: Resource;
+interface BrowseResourceCardProps {
+  resource: BrowseResource;
 }
 
-export const ResourceCard = memo(function ResourceCard({ resource }: ResourceCardProps) {
+export const BrowseResourceCard = memo(function BrowseResourceCard({ resource }: BrowseResourceCardProps) {
+  // TODO: Add download logic - handle file download when download button is clicked
+  const handleDownload = () => {
+    // LOGIC: Implement download functionality
+    // - Fetch file from server
+    // - Track download count
+    // - Update user's download history
+    console.log('Download resource:', resource.id);
+  };
+
   return (
     <div className="bg-white dark:bg-gray-700 rounded-xl shadow-sm dark:shadow-gray-900/20 hover:shadow-xl dark:hover:shadow-gray-900/40 transition-all transform hover:-translate-y-1 overflow-hidden group border border-gray-100 dark:border-gray-600/50">
       {/* Card Header with Icon */}
@@ -26,19 +35,16 @@ export const ResourceCard = memo(function ResourceCard({ resource }: ResourceCar
         <div className="absolute top-0 right-0 w-24 h-24 bg-white opacity-10 rounded-full blur-2xl"></div>
         <div className="flex items-start justify-between relative z-10">
           <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-lg flex items-center justify-center">
-            {resource.file_type === 'PDF' ? (
+            {resource.fileType === 'PDF' ? (
               <File className="w-6 h-6 text-white" />
             ) : (
               <FileText className="w-6 h-6 text-white" />
             )}
           </div>
-          <button className="text-white transition-opacity hover:opacity-80">
-            <MoreVertical className="w-5 h-5" />
-          </button>
         </div>
         <div className="mt-4 relative z-10">
           <span className="inline-block px-3 py-1 bg-white/20 backdrop-blur-sm rounded-full text-xs text-white font-medium">
-            {resource.file_type}
+            {resource.type}
           </span>
         </div>
       </div>
@@ -58,6 +64,10 @@ export const ResourceCard = memo(function ResourceCard({ resource }: ResourceCar
             <Calendar className="w-4 h-4 mr-2 text-[#d97757]" />
             <span>Semester {resource.semester}</span>
           </div>
+          <div className="flex items-center text-sm text-gray-600 dark:text-gray-300">
+            <User className="w-4 h-4 mr-2 text-[#d97757]" />
+            <span>Uploaded by {resource.uploadedBy}</span>
+          </div>
         </div>
 
         <div className="flex items-center justify-between pt-4 border-t border-gray-200 dark:border-gray-600">
@@ -72,16 +82,18 @@ export const ResourceCard = memo(function ResourceCard({ resource }: ResourceCar
           </div>
         </div>
 
-        {/* Action Buttons */}
-        <div className="flex gap-2 mt-4">
-          <button className="flex-1 px-4 py-2 bg-[#d97757] text-white rounded-lg hover:bg-[#c66847] transition-colors text-sm font-semibold">
-            View
-          </button>
-          <button className="px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:border-[#d97757] hover:text-[#d97757] transition-colors text-sm font-semibold">
-            Edit
+        {/* Download Button Only */}
+        <div className="mt-4">
+          <button 
+            onClick={handleDownload}
+            className="w-full flex items-center justify-center space-x-2 px-4 py-2.5 bg-[#d97757] text-white rounded-lg hover:bg-[#c66847] transition-all transform hover:scale-105 shadow-md shadow-[#d97757]/30 text-sm font-semibold"
+          >
+            <Download className="w-4 h-4" />
+            <span>Download</span>
           </button>
         </div>
       </div>
     </div>
   );
 });
+

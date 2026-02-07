@@ -34,3 +34,15 @@ export async function createLoginSession(userId: any, redirectTO: any) {
         }
     })
 }
+
+// Destroy the session and logout
+export async function logout(request: Request) {
+    const cookie = request.headers.get('Cookie')
+    const session = await authSession.getSession(cookie)
+    
+    return redirect('/', {
+        headers: {
+            "Set-Cookie": await authSession.destroySession(session)
+        }
+    })
+}
