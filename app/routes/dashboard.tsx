@@ -1,12 +1,9 @@
 import type { Route } from './+types/dashboard';
 import { redirect, Form, useActionData, useNavigation, useLoaderData } from 'react-router';
-import { useState, useRef } from 'react';
-import { join } from 'path';
-import { Buffer } from 'buffer';
-import { writeFile } from 'fs/promises';
+import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 
-import { 
-  Upload, 
+import {
+  Upload,
   X,
   Plus,
   Filter,
@@ -15,115 +12,159 @@ import {
 import { ResourceCard } from '~/components/dashboard-components/ResourceCard';
 import { getUserId } from '~/utils/cookie-session/session.server';
 import prisma from '~/utils/prisma/prisma.server';
+import { saveFileLocally, validateFile } from '~/utils/upload-file/file-upload.server';
 
-export function meta({}: Route.MetaArgs) {
+export function meta({ }: Route.MetaArgs) {
   return [
     { title: "Dashboard" },
     { name: "description", content: "Welcome to Your personal Dashboard!" },
   ];
 }
 
-export async function loader({request} : Route.LoaderArgs) {
-  const userId =  await getUserId(request)
-  if(!userId){
-    return redirect('/login')
-  }
+// Check if user is logged in and get the resources
+export async function loader({ request }: Route.LoaderArgs) {
+  try{
+    const userId = await getUserId(request)
+    if (!userId) {
+      return redirect('/login')
+    }
+  
+    const resources = await prisma.resource.findMany({ where: { user_id: userId } })
+    if (!resources) {
+      return { resources: [] }
+    }
 
-  const resources = await prisma.resource.findMany({where : {user_id : userId}})
-  if(!resources){
-    return { resources : [] }
+    return { resources: resources }
   }
-
-  return { resources : resources }
+   catch(error) {
+    return ({ error: 'Failed to fetch resources' })
+  }
 }
 
-export async function action({request} : Route.ActionArgs) {
-  const userId =  await getUserId(request)
-  const data = await request.formData() 
-  const title = data.get('title')
-  const semester = data.get('semester')
-  const subject = data.get('subject')
-  const resource_type = data.get('resource_type')
-  const file = data.get('file') as File
-
-  if(!title || !semester || !subject || !resource_type || !file){
-    return ({error: 'All fields are required'})
-  }
-  
+export async function action({ request }: Route.ActionArgs) {
   try {
-    // Check if file size is less than 50MB
-      if(file.size > 50 * 1024 * 1024){ return ({error: 'File size must be less than 50MB'}) }
+    const userId = await getUserId(request)
+    const data = await request.formData()
+    const title = data.get('title')
+    const semester = data.get('semester')
+    const subject = data.get('subject')
+    const resource_type = data.get('resource_type')
+    const file = data.get('file') as File
 
-      // Generate file name
-      const timeStamp = Date.now()
-      const originalName = file.name.replace(/\s+/g, '-'); 
-      const fileName = `${timeStamp}-${originalName}`
-      console.log("file name : ", fileName)
+    if (!title || !semester || !subject || !resource_type || !file) {
+      return ({ error: 'All fields are required' })
+    }
 
-      // Create upload directory path
-      const uploadDir = join(process.cwd() , 'public' , 'uploads')
-      const filePath = join(uploadDir , fileName )
+    if (!file || file.size === 0) {
+      return ({ error: 'Please select a file to upload' })
+    }
+    // Validate file
+    const { valid, error } = validateFile(file as File)
+    if (!valid) {
+      return ({ error: error as string })
+    }
 
-     // 7. Convert file to buffer and save to disk
-  const fileBuffer = Buffer.from(await file.arrayBuffer());
-  await writeFile(filePath, fileBuffer);
+    // Upload file to local storage
+    const { filePath, fileSize } = await saveFileLocally(file as any)
 
-      // 8. Create resource record in database
-      const resource = await prisma.resource.create({
-        data : {
-          title : title as string,
-          semester : Number(semester),
-          resource_type : resource_type as string,
-          file_path : `/uploads/${fileName}`,
-          file_size :BigInt(file.size),
-          user_id : userId as number,
-        }
-      })
-      
-      if(!resource){
-        return ({error: 'Failed to create resource'})
+    // Create resource record in database
+    const resource = await prisma.resource.create({
+      data: {
+        title: title as string,
+        semester: Number(semester),
+        subject: subject as string,
+        resource_type: resource_type as string,
+        file_path: filePath,
+        file_size: BigInt(fileSize),
+        user_id: userId as number,
       }
+    })
 
-      return redirect('/user/dashboard')
+    if (!resource) {
+      return ({ error: 'Failed to create resource' })
+    }
+
+    return redirect('/user/dashboard')
   } catch (error) {
-    return ({error: 'Failed to upload resource'})
+    return ({ error: 'Failed to upload resource' })
   }
 }
 
 export default function Dashboard() {
   const actionData = useActionData<typeof action>();
-  const {resources} = useLoaderData<typeof loader>();
+  const { resources } = useLoaderData<typeof loader>();
   const navigation = useNavigation();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [uploadModalOpen, setUploadModalOpen] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [selectedFilter, setSelectedFilter] = useState<string | null>(null);
+  const prevNavigationState = useRef<string>(navigation.state);
   const isSubmitting = navigation.state === 'submitting';
 
+  // Memoize semester options to avoid recreating on every render
+  const semesterOptions = useMemo(() => [1, 2, 3, 4, 5, 6, 7, 8], []);
 
- console.log("resources : ", resources)
+  // Filter resources based on selected filter
+  const filteredResources = useMemo(() => {
+    if (!selectedFilter) {
+      return resources;
+    }
+    // Normalize filter value to match resource_type (handle plural/singular and case differences)
+    const filterMap: Record<string, string> = {
+      'Notes': 'Notes',
+      'Assignments': 'Assignment',
+      'Quizzes': 'Quiz',
+    };
+    const normalizedFilter = filterMap[selectedFilter] || selectedFilter;
+    // Case-insensitive comparison to handle variations
+    return resources?.filter(resource => 
+      resource.resource_type.toLowerCase() === normalizedFilter.toLowerCase()
+    );
+  }, [resources, selectedFilter]);
 
-  // Handle file input click
-  const handleFileInputClick = () => {
+  // Close modal when form submission is successful
+  useEffect(() => {
+
+    const wasSubmitting = prevNavigationState.current === 'submitting';
+    const isNowIdle = navigation.state === 'idle';
+    const isNowLoading = navigation.state === 'loading';
+
+  
+    if (wasSubmitting && (isNowIdle || isNowLoading) && !actionData?.error && uploadModalOpen) {
+      setUploadModalOpen(false);
+      setSelectedFile(null);
+
+      // Reset file input
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    }
+    
+    prevNavigationState.current = navigation.state;
+  }, [navigation.state, actionData?.error, uploadModalOpen]);
+
+  // Memoize event handlers to prevent unnecessary re-renders
+  const handleFileInputClick = useCallback(() => {
     fileInputRef.current?.click();
-  };
+  }, []);
 
-  // Handle file selection
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       setSelectedFile(file);
     }
-  };
+  }, []);
 
-  // Handle drag and drop
-  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+  const handleDragOver = useCallback((e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     e.stopPropagation();
-  };
+  }, []);
 
-  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
+  const handleDrop = useCallback((e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     e.stopPropagation();
+
+    // Get the file from the drag and drop event
     const file = e.dataTransfer.files?.[0];
     if (file && fileInputRef.current) {
       setSelectedFile(file);
@@ -132,71 +173,107 @@ export default function Dashboard() {
       dataTransfer.items.add(file);
       fileInputRef.current.files = dataTransfer.files;
     }
-  };
+  }, []);
 
-  const Filters = () => (
-    <div className="flex flex-wrap gap-3 mb-6">
-      <button className="flex items-center space-x-2 px-4 py-2 bg-white dark:bg-gray-700 rounded-lg border border-gray-300 dark:border-gray-600 hover:border-[#d97757] transition-colors text-gray-900 dark:text-gray-100">
-        <Filter className="w-4 h-4" />
-        <span className="text-sm font-medium">All Types</span>
-      </button>
-      <button className="px-4 py-2 bg-white dark:bg-gray-700 rounded-lg border border-gray-300 dark:border-gray-600 hover:border-[#d97757] hover:text-[#d97757] transition-colors text-sm font-medium text-gray-900 dark:text-gray-100">
-        Notes
-      </button>
-      <button className="px-4 py-2 bg-white dark:bg-gray-700 rounded-lg border border-gray-300 dark:border-gray-600 hover:border-[#d97757] hover:text-[#d97757] transition-colors text-sm font-medium text-gray-900 dark:text-gray-100">
-        Assignments
-      </button>
-      <button className="px-4 py-2 bg-white dark:bg-gray-700 rounded-lg border border-gray-300 dark:border-gray-600 hover:border-[#d97757] hover:text-[#d97757] transition-colors text-sm font-medium text-gray-900 dark:text-gray-100">
-        Quizzes
-      </button>
-    </div>
-  );
+  const handleOpenModal = useCallback(() => {
+    setUploadModalOpen(true);
+  }, []);
+
+  const handleCloseModal = useCallback(() => {
+    setUploadModalOpen(false);
+  }, []);
+
+  // Handle filter selection
+  const handleFilterClick = useCallback((filterType: string | null) => {
+    setSelectedFilter(filterType);
+  }, []);
+
+  // Memoize Filters JSX with active state
+  const filtersJSX = useMemo(() => {
+    const filterOptions = [
+      { label: 'All Types', value: null, icon: Filter },
+      { label: 'Notes', value: 'Notes' },
+      { label: 'Assignments', value: 'Assignments' },
+      { label: 'Quizzes', value: 'Quizzes' },
+    ];
+
+    return (
+      <div className="flex flex-wrap gap-3 mb-6">
+        {filterOptions.map((option) => {
+          const isActive = selectedFilter === option.value;
+          const Icon = option.icon;
+          return (
+            <button
+              key={option.label}
+              onClick={() => handleFilterClick(option.value)}
+              className={`flex items-center space-x-2 px-4 py-2 rounded-lg border transition-colors text-sm font-medium ${
+                isActive
+                  ? 'bg-[#d97757] text-white border-[#d97757]'
+                  : 'bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 hover:border-[#d97757] hover:text-[#d97757] text-gray-900 dark:text-gray-100'
+              }`}
+            >
+              {Icon && <Icon className="w-4 h-4" />}
+              <span>{option.label}</span>
+            </button>
+          );
+        })}
+      </div>
+    );
+  }, [selectedFilter, handleFilterClick]);
 
   return (
     <>
       {/* Header with Upload Button */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 gap-4">
-            <div>
-              <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">My Resources</h2>
-              <p className="text-gray-600 dark:text-gray-300 mt-1">Manage and organize your uploaded materials</p>
-            </div>
-            
-            <button 
-              onClick={() => setUploadModalOpen(true)}
-              className="flex items-center justify-center space-x-2 bg-[#d97757] text-white px-6 py-3 rounded-lg hover:bg-[#c66847] transition-all transform hover:scale-105 shadow-lg"
-            >
-              <Plus className="w-5 h-5" />
-              <span className="font-semibold">Upload Resource</span>
-            </button>
+        <div>
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">My Resources</h2>
+          <p className="text-gray-600 dark:text-gray-300 mt-1">Manage and organize your uploaded materials</p>
+        </div>
+
+        <button
+          onClick={handleOpenModal}
+          className="flex items-center justify-center space-x-2 bg-[#d97757] cursor-pointer text-white px-6 py-3 rounded-lg hover:bg-[#c66847] transition-all transform hover:scale-105 shadow-lg"
+        >
+          <Plus className="w-5 h-5" />
+          <span className="font-semibold">Upload Resource</span>
+        </button>
+      </div>
+
+      {/* Filters */}
+      {filtersJSX}
+
+      {/* Resources Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {filteredResources?.length && filteredResources?.length > 0 ? filteredResources?.map((resource) => (
+            <ResourceCard key={resource.Id} resource={resource} />
+
+        )) : <div className="bg-white dark:bg-gray-700 rounded-xl p-12 text-center col-span-full">
+          <div className="w-20 h-20 bg-[#d97757]/10 dark:bg-[#d97757]/20 rounded-full flex items-center justify-center mx-auto mb-4">
+            <Upload className="w-10 h-10 text-[#d97757]" />
           </div>
-
-          {/* Filters */}
-          <Filters />
-
-          {/* Resources Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {resources.length > 0 ?  resources.map((resource) => (
-              <ResourceCard key={resource.id} resource={resource} />
-
-            )) : <div className="bg-white dark:bg-gray-700 rounded-xl p-12 text-center">
-                <div className="w-20 h-20 bg-[#d97757]/10 dark:bg-[#d97757]/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Upload className="w-10 h-10 text-[#d97757]" />
-                </div>
-                <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-2">No Resources Yet</h3>
-                <p className="text-gray-600 dark:text-gray-300 mb-6">Start uploading your study materials to help your classmates</p>
-                <button className="bg-[#d97757] text-white px-6 py-3 rounded-lg hover:bg-[#c66847] transition-all">
-                  Upload Your First Resource
-                </button>
-            </div>}
-          </div>
+          <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-2">
+            {selectedFilter ? `No ${selectedFilter} Found` : 'No Resources Yet'}
+          </h3>
+          <p className="text-gray-600 dark:text-gray-300 mb-6">
+            {selectedFilter 
+              ? `Try selecting a different filter or upload a new ${selectedFilter.toLowerCase()} resource`
+              : 'Start uploading your study materials to help your classmates'}
+          </p>
+          <button
+            onClick={handleOpenModal}
+            className="bg-[#d97757] text-white px-6 py-3 rounded-lg cursor-pointer hover:bg-[#c66847] transition-all">
+            Upload Your First Resource
+          </button>
+        </div>}
+      </div>
 
       {/* Upload Modal */}
       {uploadModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900/50 dark:bg-gray-900/70 backdrop-blur-sm" onClick={() => setUploadModalOpen(false)}>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900/50 dark:bg-gray-900/70 backdrop-blur-sm" onClick={handleCloseModal}>
           <div className="bg-white dark:bg-gray-700 rounded-2xl shadow-2xl max-w-2xl w-full p-8" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Upload Resource</h3>
-              <button onClick={() => setUploadModalOpen(false)} className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200">
+              <button onClick={handleCloseModal} className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200">
                 <X className="w-6 h-6" />
               </button>
             </div>
@@ -208,24 +285,21 @@ export default function Dashboard() {
               </div>
             )}
 
-            <Form method="post" encType="multipart/form-data" className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <Form method="post"  encType="multipart/form-data" className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Semester Dropdown */}
               <div>
                 <label className="block text-sm font-semibold text-gray-900 dark:text-gray-100 mb-2">
                   Semester
                 </label>
                 <select
-                name='semester' 
-                className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-600 rounded-lg focus:ring-2 focus:ring-[#d97757] focus:border-[#d97757] outline-none text-gray-900 dark:text-gray-100">
+                  name='semester'
+                  className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-600 rounded-lg focus:ring-2 focus:ring-[#d97757] focus:border-[#d97757] outline-none text-gray-900 dark:text-gray-100">
                   <option value="">Select Semester</option>
-                  <option value="1">Semester 1</option>
-                  <option value="2">Semester 2</option>
-                  <option value="3">Semester 3</option>
-                  <option value="4">Semester 4</option>
-                  <option value="5">Semester 5</option>
-                  <option value="6">Semester 6</option>
-                  <option value="7">Semester 7</option>
-                  <option value="8">Semester 8</option>
+                  {semesterOptions.map((sem) => (
+                    <option key={sem} value={sem}>
+                      Semester {sem}
+                    </option>
+                  ))}
                 </select>
               </div>
 
@@ -248,8 +322,8 @@ export default function Dashboard() {
                   Resource Type
                 </label>
                 <select
-                name='resource_type'
-                className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-600 rounded-lg focus:ring-2 focus:ring-[#d97757] focus:border-[#d97757] outline-none text-gray-900 dark:text-gray-100">
+                  name='resource_type'
+                  className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-600 rounded-lg focus:ring-2 focus:ring-[#d97757] focus:border-[#d97757] outline-none text-gray-900 dark:text-gray-100">
                   <option>Select Type</option>
                   <option>Notes</option>
                   <option>Assignment</option>
@@ -278,7 +352,7 @@ export default function Dashboard() {
                 <label className="block text-sm font-semibold text-gray-900 dark:text-gray-100 mb-2">
                   Upload File
                 </label>
-                <div 
+                <div
                   onClick={handleFileInputClick}
                   onDragOver={handleDragOver}
                   onDrop={handleDrop}

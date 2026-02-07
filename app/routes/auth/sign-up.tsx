@@ -63,20 +63,14 @@ export default function SignUpPage() {
   const isSubmitting = navigation.state === 'submitting';
 
   return (
-    <div className="min-h-screen bg-[#f5f5f0] dark:bg-gray-800 flex items-center justify-center px-4 sm:px-6 lg:px-8 py-12">
-      {/* Background decorations */}
-      <div className="absolute top-20 left-10 w-72 h-72 bg-[#d97757] opacity-5 dark:opacity-10 rounded-full blur-3xl"></div>
-      <div className="absolute bottom-20 right-10 w-96 h-96 bg-[#d97757] opacity-5 dark:opacity-10 rounded-full blur-3xl"></div>
-
-      <div className="max-w-md w-full relative z-10">
-        <Form
-          method="post"
-          className="bg-white dark:bg-gray-700 rounded-2xl shadow-2xl p-8 sm:p-10 space-y-5">
+    <Form
+      method="post"
+      className="space-y-5">
           {/* Logo & Header inside card */}
           <div className="text-center mb-4">
-            <div className="flex justify-center mb-4">
-              <div className="w-12 h-12 bg-[#d97757] rounded-xl flex items-center justify-center shadow-lg">
-                <BookOpen className="w-6 h-6 text-white" />
+            <div className="flex justify-center mb-2">
+            <div className=" w-10 h-10 rounded-xl flex items-center justify-center transform group-hover:scale-110 transition-transform duration-300">
+                <img src="/assests/fav-icon.png" alt="StudyVault logo" className="w-full h-full object-contain" />
               </div>
             </div>
             <h2 className="text-3xl font-bold text-[#d97757] mb-2">
@@ -156,7 +150,7 @@ export default function SignUpPage() {
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-400 dark:text-gray-500 hover:text-[#d97757] transition-colors"
+                className="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-400 dark:text-gray-500 hover:text-[#d97757] transition-colors cursor-pointer"
                 aria-label={showPassword ? "Hide password" : "Show password"}
               >
                 {showPassword ? (
@@ -211,10 +205,6 @@ export default function SignUpPage() {
               </Link>
             </p>
           </div>
-        </Form>
-
-
-      </div>
-    </div>
+    </Form>
   );
 }

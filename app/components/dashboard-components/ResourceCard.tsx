@@ -1,17 +1,19 @@
 import { File, FileText, MoreVertical, BookOpen, Calendar, Download } from 'lucide-react';
 import { memo } from 'react';
+import { Link } from 'react-router';
+import { getRelativeTime } from '~/utils/handle-time/relative-time';
 
 interface Resource {
-  id: number;
+  Id: number;
   title: string;
   subject: string;
   semester: number;
-  type: string;
-  file_type: string;
-  file_size: BigInt;
+  resource_type: string;
+  file_size: bigint | number;
   user_id: number;
-  created_at: Date;
-  updated_at: Date;
+  created_at: Date | string;
+  updated_at: Date | string;
+  file_path: string;
 }
 
 interface ResourceCardProps {
@@ -26,19 +28,17 @@ export const ResourceCard = memo(function ResourceCard({ resource }: ResourceCar
         <div className="absolute top-0 right-0 w-24 h-24 bg-white opacity-10 rounded-full blur-2xl"></div>
         <div className="flex items-start justify-between relative z-10">
           <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-lg flex items-center justify-center">
-            {resource.file_type === 'PDF' ? (
+            {resource.resource_type === 'PDF' ? (
               <File className="w-6 h-6 text-white" />
             ) : (
               <FileText className="w-6 h-6 text-white" />
             )}
           </div>
-          <button className="text-white transition-opacity hover:opacity-80">
-            <MoreVertical className="w-5 h-5" />
-          </button>
+          
         </div>
         <div className="mt-4 relative z-10">
           <span className="inline-block px-3 py-1 bg-white/20 backdrop-blur-sm rounded-full text-xs text-white font-medium">
-            {resource.file_type}
+            {resource.resource_type}
           </span>
         </div>
       </div>
@@ -60,24 +60,32 @@ export const ResourceCard = memo(function ResourceCard({ resource }: ResourceCar
           </div>
         </div>
 
+            {/* // FILE SIZE AND UPLOADED AT TIME */}
         <div className="flex items-center justify-between pt-4 border-t border-gray-200 dark:border-gray-600">
           <div className="flex items-center space-x-4 text-xs text-gray-500 dark:text-gray-400">
-            <span>{resource.size}</span>
+            <span>{typeof resource.file_size === 'bigint' 
+              ? `${(Number(resource.file_size) / (1024 * 1024)).toFixed(2)} MB`
+              : `${(resource.file_size / (1024 * 1024)).toFixed(2)} MB`}</span>
             <span>•</span>
-            <span>{resource.uploadedDate}</span>
+            <span>{getRelativeTime(resource.created_at)}</span>
           </div>
+
+          {/* // Handle Downloads Logic */}
           <div className="flex items-center space-x-1 text-sm text-gray-700 dark:text-gray-300">
             <Download className="w-4 h-4 text-[#d97757]" />
-            <span className="font-semibold">{resource.downloads}</span>
+            <span className="font-semibold">0</span>
           </div>
         </div>
 
         {/* Action Buttons */}
         <div className="flex gap-2 mt-4">
-          <button className="flex-1 px-4 py-2 bg-[#d97757] text-white rounded-lg hover:bg-[#c66847] transition-colors text-sm font-semibold">
-            View
-          </button>
-          <button className="px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:border-[#d97757] hover:text-[#d97757] transition-colors text-sm font-semibold">
+          <Link 
+          to={resource.file_path} 
+          target='_blank'
+          className="flex-1 px-4 py-2 text-center bg-[#d97757] text-white rounded-lg hover:bg-[#c66847] transition-colors text-sm font-semibold">
+            Download
+          </Link>
+          <button className="px-4 py-2 text-center border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:border-[#d97757] hover:text-[#d97757] transition-colors text-sm font-semibold">
             Edit
           </button>
         </div>
