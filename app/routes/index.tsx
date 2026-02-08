@@ -5,6 +5,8 @@ import { Features } from '../components/home-page-components/Features';
 import { HowItWorks } from '../components/home-page-components/HowItWorks';
 import { Benefits } from '../components/home-page-components/Benefits';
 import { CallToAction } from '../components/home-page-components/CallToAction';
+import prisma from "~/utils/prisma/prisma.server";
+
 
 
 
@@ -15,11 +17,28 @@ export function meta({}: Route.MetaArgs) {
   ];
 }
 
-export default function LandingPage() {
+export async function loader() {
+  try {
+    const userCount = await prisma.user.count();
+    const resourceCount = await prisma.resource.count();
+    return {
+      userCount,
+      resourceCount
+    }
+  } catch (error) {
+    return {
+      userCount: 0,
+      resourceCount: 0
+    }
+  }
+  
+}
+
+export default function LandingPage({loaderData} : any) {
   return (
     <>
       {/* SECTION 2: HERO */}
-      <Hero />
+      <Hero userCount={loaderData.userCount} resourceCount={loaderData.resourceCount} />
 
       {/* SECTION 3: FEATURES */}
       <Features />
