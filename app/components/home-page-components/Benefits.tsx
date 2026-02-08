@@ -2,11 +2,11 @@ import { CheckCircle } from 'lucide-react';
 
 export function Benefits() {
   return (
-    <section id="benefits" className="py-20 bg-white">
+    <section id="benefits" className="py-20 bg-white dark:bg-gray-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid lg:grid-cols-2 gap-16 items-center">
             <div>
-              <h2 className="text-4xl lg:text-5xl font-bold text-gray-900 mb-8">
+              <h2 className="text-4xl lg:text-5xl font-bold text-gray-900 dark:text-gray-50 mb-8">
                 Stop Wasting Time <span className="text-[#d97757]">Hunting for Notes</span>
               </h2>
               
@@ -34,8 +34,8 @@ export function Benefits() {
                       <CheckCircle className="w-6 h-6 text-[#d97757]" />
                     </div>
                     <div>
-                      <div className="text-gray-500 line-through text-sm mb-1">{item.problem}</div>
-                      <div className="text-gray-900 font-semibold">{item.solution}</div>
+                      <div className="text-gray-500 dark:text-gray-400 line-through text-sm mb-1">{item.problem}</div>
+                      <div className="text-gray-900 dark:text-gray-50 font-semibold">{item.solution}</div>
                     </div>
                   </div>
                 ))}
