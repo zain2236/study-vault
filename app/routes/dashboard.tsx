@@ -30,14 +30,10 @@ export async function loader({ request }: Route.LoaderArgs) {
     }
   
     const resources = await prisma.resource.findMany({ where: { user_id: userId } })
-    if (!resources) {
-      return { resources: [] }
-    }
-
-    return { resources: resources }
+    return { resources: resources || [], error: null }
   }
    catch(error) {
-    return ({ error: 'Failed to fetch resources' })
+    return { resources: [], error: 'Something went wrong. Please try again.' }
   }
 }
 
@@ -92,7 +88,7 @@ export async function action({ request }: Route.ActionArgs) {
 
 export default function Dashboard() {
   const actionData = useActionData<typeof action>();
-  const { resources } = useLoaderData<typeof loader>();
+  const { resources, error } = useLoaderData<typeof loader>();
   const navigation = useNavigation();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [uploadModalOpen, setUploadModalOpen] = useState(false);
@@ -239,33 +235,46 @@ export default function Dashboard() {
         </button>
       </div>
 
-      {/* Filters */}
-      {filtersJSX}
-
-      {/* Resources Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {filteredResources?.length && filteredResources?.length > 0 ? filteredResources?.map((resource) => (
-            <ResourceCard key={resource.Id} resource={resource} />
-
-        )) : <div className="bg-white dark:bg-gray-700 rounded-xl p-12 text-center col-span-full">
-          <div className="w-20 h-20 bg-[#d97757]/10 dark:bg-[#d97757]/20 rounded-full flex items-center justify-center mx-auto mb-4">
-            <Upload className="w-10 h-10 text-[#d97757]" />
-          </div>
-          <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-2">
-            {selectedFilter ? `No ${selectedFilter} Found` : 'No Resources Yet'}
-          </h3>
-          <p className="text-gray-600 dark:text-gray-300 mb-6">
-            {selectedFilter 
-              ? `Try selecting a different filter or upload a new ${selectedFilter.toLowerCase()} resource`
-              : 'Start uploading your study materials to help your classmates'}
-          </p>
-          <button
-            onClick={handleOpenModal}
-            className="bg-[#d97757] text-white px-6 py-3 rounded-lg cursor-pointer hover:bg-[#c66847] transition-all">
-            Upload Your First Resource
+      {/* Error State */}
+      {error ? (
+        <div className="bg-white dark:bg-gray-700 rounded-xl p-12 text-center">
+          <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-2">Something Went Wrong</h3>
+          <p className="text-gray-600 dark:text-gray-300 mb-6">{error}</p>
+          <button onClick={() => window.location.reload()} className="bg-[#d97757] text-white px-6 py-3 rounded-lg hover:bg-[#c66847] transition-all">
+            Try Again
           </button>
-        </div>}
-      </div>
+        </div>
+      ) : (
+        <>
+          {/* Filters */}
+          {filtersJSX}
+
+          {/* Resources Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredResources?.length && filteredResources?.length > 0 ? filteredResources?.map((resource) => (
+                <ResourceCard key={resource.Id} resource={resource} />
+
+            )) : <div className="bg-white dark:bg-gray-700 rounded-xl p-12 text-center col-span-full">
+              <div className="w-20 h-20 bg-[#d97757]/10 dark:bg-[#d97757]/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Upload className="w-10 h-10 text-[#d97757]" />
+              </div>
+              <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-2">
+                {selectedFilter ? `No ${selectedFilter} Found` : 'No Resources Yet'}
+              </h3>
+              <p className="text-gray-600 dark:text-gray-300 mb-6">
+                {selectedFilter 
+                  ? `Try selecting a different filter or upload a new ${selectedFilter.toLowerCase()} resource`
+                  : 'Start uploading your study materials to help your classmates'}
+              </p>
+              <button
+                onClick={handleOpenModal}
+                className="bg-[#d97757] text-white px-6 py-3 rounded-lg cursor-pointer hover:bg-[#c66847] transition-all">
+                Upload Your First Resource
+              </button>
+            </div>}
+          </div>
+        </>
+      )}
 
       {/* Upload Modal */}
       {uploadModalOpen && (

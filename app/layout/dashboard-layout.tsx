@@ -7,25 +7,32 @@ import { Sidebar } from '~/components/dashboard-components/Sidebar';
 import { getUserId } from '~/utils/cookie-session/session.server';
 import prisma from '~/utils/prisma.server';
 
-export async function loader({request} : Route.LoaderArgs) {
-    const userId = await getUserId(request) 
-    if(!userId) {
-        return redirect('/login')
-    }
-    
-    const user = await prisma.user.findUnique({where : {id : userId}})
+export async function loader({ request }: Route.LoaderArgs) {
+    try {
+        const userId = await getUserId(request)
+        if (!userId) {
+            return redirect('/login')
+        }
+        const user = await prisma.user.findUnique({ where: { id: userId } })
+        if (!user) {
+            return redirect('/login')
+        }
 
-    if (!user) {
-        return redirect('/login')
+        return {
+            userName: user.user_name,
+            profileImg: (user as any).profileImg || null,
+            error: null
+        }
+    } catch (error) {
+        return {
+            userName: 'User',
+            profileImg: null,
+            error: 'Database connection failed'
+        }
     }
+}
 
-    return {
-        userName: user.user_name,
-        profileImg: (user as any).profileImg || null
-    }
-    }
-
-export default function DashboardLayout({loaderData} : any) {
+export default function DashboardLayout({ loaderData }: any) {
     const [sidebarOpen, setSidebarOpen] = useState(false);
 
     return (
