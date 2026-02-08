@@ -1,4 +1,5 @@
 import { ArrowRight, Upload, BookOpen, Download } from 'lucide-react';
+import { Link } from 'react-router';
 
 export function Hero() {
   return (
@@ -22,13 +23,13 @@ export function Hero() {
               </p>
 
               <div className="flex flex-col sm:flex-row gap-4">
-                <button className="flex items-center justify-center space-x-2 bg-linear-to-r from-[#d97757] to-[#c66847] text-white px-8 py-4 rounded-lg font-heading font-semibold hover:shadow-md hover:shadow-[#d97757]/20 transition-all transform hover:scale-[1.02] text-lg">
+                <Link to="/sign-up" className="flex items-center justify-center space-x-2 bg-gradient-to-r from-[#d97757] to-[#c66847] text-white px-8 py-4 cursor-pointer rounded-lg font-heading font-semibold hover:shadow-md hover:shadow-[#d97757]/20 transition-all transform hover:scale-[1.02] text-lg">
                   <span>Start Organizing Now</span>
                   <ArrowRight className="w-5 h-5" />
-                </button>
-                <button className="border border-gray-200 dark:border-gray-600 bg-linear-to-br from-white to-[#fafafa] dark:from-gray-700 dark:to-gray-700/80 text-gray-600 dark:text-gray-100 px-8 py-4 rounded-lg hover:border-[#d97757] hover:text-[#d97757] transition-all flex items-center justify-center space-x-2 text-lg font-semibold">
+                </Link>
+                <Link to="/features" className="border border-gray-200 cursor-pointer dark:border-gray-600 bg-linear-to-br from-white to-[#fafafa] dark:from-gray-700 dark:to-gray-700/80 text-gray-600 dark:text-gray-100 px-8 py-4 rounded-lg hover:border-[#d97757] hover:text-[#d97757] transition-all flex items-center justify-center space-x-2 text-lg font-semibold">
                   <span>See How It Works</span>
-                </button>
+                </Link>
               </div>
 
               <div className="flex items-center space-x-8 pt-4">

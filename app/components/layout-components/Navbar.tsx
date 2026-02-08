@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Menu, X, BookOpen, Sparkles } from 'lucide-react';
+import { Menu, X, BookOpen, Sparkles, User } from 'lucide-react';
 import { Link, NavLink } from 'react-router';
 
 
@@ -49,10 +49,10 @@ export function Navbar({ isLoggedIn } : any) {
 
             {isLoggedIn ? (<NavLink
               to="/user/dashboard"
-              className="flex items-center space-x-2 bg-linear-to-r from-[#d97757] to-[#c66847] text-white px-6 py-2.5 rounded-lg font-heading font-semibold hover:shadow-md hover:shadow-[#d97757]/20 transition-all transform hover:scale-[1.02]"
+              className="flex items-center space-x-2 bg-gradient-to-r from-[#d97757] to-[#c66847] text-white px-6 py-2.5 rounded-lg font-heading font-semibold hover:shadow-md hover:shadow-[#d97757]/20 transition-all transform hover:scale-[1.02]"
             >
+              <User className="w-4 h-4" />
               <span>Dashboard</span>
-              <Sparkles className="w-4 h-4" />
             </NavLink>) : (<div className="hidden md:flex items-center space-x-2">
               <NavLink
                 to="/login"
@@ -63,7 +63,7 @@ export function Navbar({ isLoggedIn } : any) {
 
               <NavLink
                 to="/sign-up"
-                className="flex items-center space-x-2 bg-linear-to-r from-[#d97757] to-[#c66847] text-white px-6 py-2.5 rounded-lg font-heading font-semibold hover:shadow-md hover:shadow-[#d97757]/20 transition-all transform hover:scale-[1.02]"
+                className="flex items-center space-x-2 bg-gradient-to-r from-[#d97757] to-[#c66847] text-white px-6 py-2.5 rounded-lg font-heading font-semibold hover:shadow-md hover:shadow-[#d97757]/20 transition-all transform hover:scale-[1.02]"
               >
                 <span>Get Started</span>
                 <Sparkles className="w-4 h-4" />
@@ -110,11 +110,11 @@ export function Navbar({ isLoggedIn } : any) {
 
               {isLoggedIn ? ( <Link
               to="/user/dashboard"
-              className="flex items-center justify-center space-x-2 bg-linear-to-r from-[#d97757] to-[#c66847] text-white px-6 py-3 rounded-lg font-heading font-semibold hover:shadow-md hover:shadow-[#d97757]/20 transition-all mx-2"
+              className="flex items-center justify-center space-x-2 bg-gradient-to-r from-[#d97757] to-[#c66847] text-white px-6 py-3 rounded-lg font-heading font-semibold hover:shadow-md hover:shadow-[#d97757]/20 transition-all mx-2"
               onClick={() => setMobileMenuOpen(false)}
             >
+              <User className="w-4 h-4" />
               <span>Dashboard</span>
-              <Sparkles className="w-4 h-4" />
             </Link>) : (<div>
             <Link
               to="/login"
@@ -125,7 +125,7 @@ export function Navbar({ isLoggedIn } : any) {
             </Link>
             <Link
               to="/sign-up"
-              className="flex items-center justify-center space-x-2 bg-linear-to-r from-[#d97757] to-[#c66847] text-white px-6 py-3 rounded-lg font-heading font-semibold hover:shadow-md hover:shadow-[#d97757]/20 transition-all mx-2"
+              className="flex items-center justify-center space-x-2 bg-gradient-to-r from-[#d97757] to-[#c66847] text-white px-6 py-3 rounded-lg font-heading font-semibold hover:shadow-md hover:shadow-[#d97757]/20 transition-all mx-2"
               onClick={() => setMobileMenuOpen(false)}
             >
               <span>Get Started</span>

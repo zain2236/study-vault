@@ -1,5 +1,6 @@
 import { File, FileText, BookOpen, Calendar, Download, User } from 'lucide-react';
-import { memo } from 'react';
+import { memo, useCallback } from 'react';
+import { useRevalidator } from 'react-router';
 
 interface BrowseResource {
   id: number;
@@ -19,14 +20,12 @@ interface BrowseResourceCardProps {
 }
 
 export const BrowseResourceCard = memo(function BrowseResourceCard({ resource }: BrowseResourceCardProps) {
-  // TODO: Add download logic - handle file download when download button is clicked
-  const handleDownload = () => {
-    // LOGIC: Implement download functionality
-    // - Fetch file from server
-    // - Track download count
-    // - Update user's download history
-    console.log('Download resource:', resource.id);
-  };
+  const revalidator = useRevalidator();
+
+  const handleDownload = useCallback(() => {
+    window.location.href = `/download/${resource.id}`;
+    setTimeout(() => revalidator.revalidate(), 1000);
+  }, [resource.id, revalidator]);
 
   return (
     <div className="bg-white dark:bg-gray-700 rounded-xl shadow-sm dark:shadow-gray-900/20 hover:shadow-xl dark:hover:shadow-gray-900/40 transition-all transform hover:-translate-y-1 overflow-hidden group border border-gray-100 dark:border-gray-600/50">

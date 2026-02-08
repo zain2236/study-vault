@@ -13,7 +13,8 @@ export function CallToAction() {
           </p>
           
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link to="/sign-up" className="bg-[#d97757] text-white px-10 py-5 rounded-lg hover:bg-[#c66847] transition-all transform hover:scale-105 flex items-center justify-center space-x-2 text-lg font-semibold shadow-lg dark:shadow-[#d97757]/20">
+            <Link to="/sign-up" className="bg-gradient-to-r from-[#d97757] to-[#c66847] text-white px-10 py-5 rounded-lg hover:shadow-md hover:shadow-[#d97757]/20 transition-all transform hover:scale-105 flex items-center justify-center space-x-2 text-lg font-semibold shadow-lg dark:shadow-[#d97757]/20">
+              
               <span>Create Free Account</span>
               <ArrowRight className="w-5 h-5" />
             </Link>
