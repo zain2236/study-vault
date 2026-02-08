@@ -29,7 +29,10 @@ export async function loader({ request }: Route.LoaderArgs) {
       return redirect('/login')
     }
   
-    const resources = await prisma.resource.findMany({ where: { user_id: userId } })
+    const resources = await prisma.resource.findMany({ 
+      where: { user_id: userId },
+      orderBy: { created_at: 'desc' }
+    })
     return { resources: resources || [], error: null }
   }
    catch(error) {
@@ -40,7 +43,59 @@ export async function loader({ request }: Route.LoaderArgs) {
 export async function action({ request }: Route.ActionArgs) {
   try {
     const userId = await getUserId(request)
+    if (!userId) {
+      return redirect('/login')
+    }
+
     const data = await request.formData()
+    const intent = data.get('intent')
+
+    // Handle publish/unpublish
+    if (intent === 'publish' || intent === 'unpublish') {
+      const resourceId = data.get('resourceId')
+      if (!resourceId) {
+        return { error: 'Resource ID is required' }
+      }
+
+      const resource = await prisma.resource.findFirst({
+        where: { Id: Number(resourceId), user_id: userId }
+      })
+
+      if (!resource) {
+        return { error: 'Resource not found' }
+      }
+
+      await prisma.resource.update({
+        where: { Id: Number(resourceId) },
+        data: { isPublic: intent === 'publish' }
+      })
+
+      return { success: true }
+    }
+
+    // Handle delete
+    if (intent === 'delete') {
+      const resourceId = data.get('resourceId')
+      if (!resourceId) {
+        return { error: 'Resource ID is required' }
+      }
+
+      const resource = await prisma.resource.findFirst({
+        where: { Id: Number(resourceId), user_id: userId }
+      })
+
+      if (!resource) {
+        return { error: 'Resource not found' }
+      }
+
+      await prisma.resource.delete({
+        where: { Id: Number(resourceId) }
+      })
+
+      return { success: true }
+    }
+
+    // Handle upload (existing logic)
     const title = data.get('title')
     const semester = data.get('semester')
     const subject = data.get('subject')
@@ -82,7 +137,7 @@ export async function action({ request }: Route.ActionArgs) {
 
     return redirect('/user/dashboard')
   } catch (error) {
-    return ({ error: 'Failed to upload resource' })
+    return ({ error: 'Failed to process request' })
   }
 }
 
@@ -204,8 +259,8 @@ export default function Dashboard() {
               onClick={() => handleFilterClick(option.value)}
               className={`flex items-center space-x-2 px-4 py-2 rounded-lg border transition-colors text-sm font-medium ${
                 isActive
-                  ? 'bg-[#d97757] text-white border-[#d97757]'
-                  : 'bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 hover:border-[#d97757] hover:text-[#d97757] text-gray-900 dark:text-gray-100'
+                  ? 'bg-[#d97757]/15 dark:bg-[#d97757]/25 text-[#d97757] dark:text-[#c66847] border-[#d97757]/30 dark:border-[#d97757]/40'
+                  : 'bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 hover:border-[#d97757]/50 hover:text-[#d97757] text-gray-900 dark:text-gray-100'
               }`}
             >
               {Icon && <Icon className="w-4 h-4" />}
@@ -217,6 +272,8 @@ export default function Dashboard() {
     );
   }, [selectedFilter, handleFilterClick]);
 
+
+  // Handle publish
   return (
     <>
       {/* Header with Upload Button */}
@@ -228,10 +285,10 @@ export default function Dashboard() {
 
         <button
           onClick={handleOpenModal}
-          className="flex items-center justify-center space-x-2 bg-[#d97757] cursor-pointer text-white px-6 py-3 rounded-lg hover:bg-[#c66847] transition-all transform hover:scale-105 shadow-lg"
+          className="flex items-center justify-center gap-2 bg-[#d97757] text-white px-5 py-2.5 rounded-lg hover:bg-[#c66847] transition-colors duration-200 font-medium text-sm shadow-sm hover:shadow-md focus:outline-none focus:ring-2 focus:ring-[#d97757]/50 focus:ring-offset-2"
         >
-          <Plus className="w-5 h-5" />
-          <span className="font-semibold">Upload Resource</span>
+          <Plus className="w-4 h-4" />
+          <span>Upload Resource</span>
         </button>
       </div>
 
@@ -268,7 +325,7 @@ export default function Dashboard() {
               </p>
               <button
                 onClick={handleOpenModal}
-                className="bg-[#d97757] text-white px-6 py-3 rounded-lg cursor-pointer hover:bg-[#c66847] transition-all">
+                className="bg-[#d97757] text-white px-6 py-3 rounded-lg hover:bg-[#c66847] transition-colors duration-200 font-medium shadow-sm hover:shadow-md focus:outline-none focus:ring-2 focus:ring-[#d97757]/50 focus:ring-offset-2">
                 Upload Your First Resource
               </button>
             </div>}

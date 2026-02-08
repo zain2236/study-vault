@@ -1,4 +1,4 @@
-import { Search, Menu } from 'lucide-react';
+import { Search, Menu, User } from 'lucide-react';
 import { Link } from 'react-router';
 
 interface HeaderProps {
@@ -53,27 +53,12 @@ export function Header({ sidebarOpen, setSidebarOpen , userInfo }: HeaderProps) 
             </div>
           </div>
 
-          {/* Right Side Actions */}
-          <div className="flex items-center space-x-3">
-           
-            {/* User Name */}
+          {/* User Profile */}
+          <div className="flex items-center space-x-2">
+            <User className="w-5 h-5 text-[#d97757]" />
             <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
               {userInfo.userName}
             </span>
-             {/* User Avatar */}
-             <div className="w-10 h-10 rounded-full flex items-center justify-center overflow-hidden bg-[#d97757] text-white font-semibold text-sm">
-              {userInfo.profileImg ? (
-                <img 
-                  src={userInfo.profileImg} 
-                  alt={userInfo.userName}
-                  className="w-full h-full object-cover"
-                />
-              ) : (
-                <span>
-                  {userInfo.userName?.split(' ')[0]?.charAt(0)?.toUpperCase() || 'U'}
-                </span>
-              )}
-            </div>
           </div>
         </div>
       </div>

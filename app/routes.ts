@@ -21,5 +21,8 @@ export default [
         route("logout", "routes/auth/logout.tsx"),
     ]),
 
+    // Download route (no layout needed) - resource route for file downloads
+    route("download/:id", "routes/download.$id.tsx"),
+
     route("*", "routes/_404.tsx"),
 ] satisfies RouteConfig;

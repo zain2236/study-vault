@@ -25,10 +25,10 @@ model Resource {
   resource_type String
   file_path     String
   file_size     BigInt
+  downloads     Int      @default(0)
+  isPublic Boolean @default(false)
   user_id       Int
   user          User     @relation(fields: [user_id], references: [id])
   created_at    DateTime @default(now())
   updated_at    DateTime @updatedAt
-
-
 }
