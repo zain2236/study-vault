@@ -327,7 +327,7 @@ export default function Dashboard() {
     setAllResources(loaderData.resources);
     setNextCursor(loaderData.nextCursor);
     setHasMore(loaderData.hasMore);
-  }, [loaderData]);
+  }, [loaderData.resources, loaderData.nextCursor, loaderData.hasMore]);
 
   // Update resources when fetcher loads more
   useEffect(() => {
@@ -342,9 +342,11 @@ export default function Dashboard() {
     }
   }, [fetcher.data]);
 
-  // Expose semester counts to layout via window (temporary solution)
+  // Expose semester counts to layout via window and custom event
   useEffect(() => {
     (window as any).dashboardSemesterCounts = loaderData.semesterCounts;
+    // Dispatch custom event to notify layout of update
+    window.dispatchEvent(new CustomEvent('dashboardCountsUpdated'));
     return () => {
       delete (window as any).dashboardSemesterCounts;
     };
@@ -367,7 +369,7 @@ export default function Dashboard() {
     if (type && type !== 'all') formData.append('type', type);
     
     fetcher.submit(formData, { method: 'POST' });
-  }, [nextCursor, searchParams, fetcher]);
+  }, [nextCursor, searchParams, fetcher.state, fetcher]);
 
   // Handle upload response and close modal
   useEffect(() => {
@@ -386,7 +388,7 @@ export default function Dashboard() {
       }
     }
     prevNavigationState.current = navigation.state;
-  }, [navigation.state, actionData?.error, uploadModalOpen]);
+  }, [navigation.state, actionData, uploadModalOpen]);
 
   const handleFileSelect = useCallback((file: File | null) => {
     setSelectedFile(file);

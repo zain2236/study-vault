@@ -55,7 +55,7 @@ export function Navbar({ isLoggedIn } : any) {
             {/* // If user is logged in then show dashboard button  */}
             {isLoggedIn ? (<NavLink
               to="/user/dashboard"
-              className="flex items-center space-x-2 bg-linear-to-r from-[#d97757] to-[#c66847] text-white px-6 py-2.5 rounded-lg font-heading font-semibold hover:shadow-md hover:shadow-[#d97757]/20 transition-all transform hover:scale-[1.02]"
+              className="flex items-center space-x-2 bg-gradient-to-r from-[#d97757] to-[#c66847] text-white px-6 py-2.5 rounded-lg font-heading font-semibold hover:shadow-md hover:shadow-[#d97757]/20 transition-all transform hover:scale-[1.02]"
             >
               <User className="w-4 h-4" />
               <span>Dashboard</span>
@@ -69,7 +69,7 @@ export function Navbar({ isLoggedIn } : any) {
 
               <NavLink
                 to="/sign-up"
-                className="flex items-center space-x-2 bg-linear-to-r from-[#d97757] to-[#c66847] text-white px-6 py-2.5 rounded-lg font-heading font-semibold hover:shadow-md hover:shadow-[#d97757]/20 transition-all transform hover:scale-[1.02]"
+                className="flex items-center space-x-2 bg-gradient-to-r from-[#d97757] to-[#c66847] text-white px-6 py-2.5 rounded-lg font-heading font-semibold hover:shadow-md hover:shadow-[#d97757]/20 transition-all transform hover:scale-[1.02]"
               >
                 <span>Get Started</span>
                 <Sparkles className="w-4 h-4" />

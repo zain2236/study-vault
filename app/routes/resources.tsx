@@ -136,7 +136,7 @@ export default function BrowseResourcesPage() {
     setAllResources(loaderData.resources);
     setNextCursor(loaderData.nextCursor);
     setHasMore(loaderData.hasMore);
-  }, [loaderData]);
+  }, [loaderData.resources, loaderData.nextCursor, loaderData.hasMore]);
 
   // Update resources when fetcher loads more
   useEffect(() => {
@@ -208,7 +208,7 @@ export default function BrowseResourcesPage() {
     if (filters.type !== 'all') formData.append('type', filters.type);
 
     fetcher.submit(formData, { method: 'POST' });
-  }, [nextCursor, filters, fetcher]);
+  }, [nextCursor, filters.searchQuery, filters.semester, filters.type, fetcher.state, fetcher]);
 
   const isLoadingMore = fetcher.state === 'submitting';
 

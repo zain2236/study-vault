@@ -63,7 +63,7 @@ export default function DashboardLayout({ loaderData }: any) {
             params.delete('search');
         }
         setSearchParams(params, { replace: true });
-    }, [debouncedSearch, setSearchParams, searchParams]);
+    }, [debouncedSearch, setSearchParams]);
 
     // Handlers for search and filters
     const handleSearchChange = (value: string) => {
@@ -92,8 +92,12 @@ export default function DashboardLayout({ loaderData }: any) {
             if (counts) setSemesterCounts(counts);
         };
         updateCounts();
-        const interval = setInterval(updateCounts, 300);
-        return () => clearInterval(interval);
+        // Use a more efficient approach: listen for custom event instead of polling
+        const handleCountsUpdate = () => updateCounts();
+        window.addEventListener('dashboardCountsUpdated', handleCountsUpdate);
+        return () => {
+            window.removeEventListener('dashboardCountsUpdated', handleCountsUpdate);
+        };
     }, [location.pathname]);
 
     return (

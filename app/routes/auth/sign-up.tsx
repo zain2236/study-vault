@@ -1,7 +1,7 @@
 import type { Route } from './+types/sign-up';
 import { useState, useEffect } from 'react';
 import { Form, Link, useNavigation, useActionData, redirect } from 'react-router';
-import { Mail, Lock, User, ArrowRight, Eye, EyeOff, BookOpen } from 'lucide-react';
+import { Mail, Lock, User, ArrowRight, Eye, EyeOff } from 'lucide-react';
 import { authSignupToast } from '~/components/toast-components/auth-signup-toast';
 
 import prisma from '../../utils/prisma.server';
@@ -68,7 +68,7 @@ export default function SignUpPage() {
     if (actionData?.error) {
       authSignupToast.error(actionData.error);
     }
-  }, [actionData?.error]);
+  }, [actionData]);
 
   return (
     <Form

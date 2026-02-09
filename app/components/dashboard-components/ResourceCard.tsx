@@ -1,10 +1,11 @@
-import { File, FileText, MoreVertical, BookOpen, Calendar, Download, Trash2, Globe, AlertTriangle } from 'lucide-react';
-import { memo, useState, useCallback, useMemo, useEffect } from 'react';
+import { File, FileText, MoreVertical, BookOpen, Calendar, Download, Trash2, Globe } from 'lucide-react';
+import { memo, useState, useCallback, useMemo, useEffect, useRef } from 'react';
 import { useRevalidator, useFetcher } from 'react-router';
 import { getRelativeTime } from '~/utils/handle-time/relative-time';
 import { dashboardDownloadToast } from '~/components/toast-components/dashboard-download-toast';
 import { dashboardDeleteToast } from '~/components/toast-components/dashboard-delete-toast';
 import { dashboardPublishToast } from '~/components/toast-components/dashboard-publish-toast';
+import { DeleteConfirmModal } from '~/components/ui-components';
 
 interface Resource {
   Id: number;
@@ -25,29 +26,72 @@ interface ResourceCardProps {
   resource: Resource;
 }
 
+// Helper function to format file size
+const formatFileSize = (size: bigint | number): string => {
+  const sizeInBytes = typeof size === 'bigint' ? Number(size) : size;
+  return `${(sizeInBytes / (1024 * 1024)).toFixed(2)} MB`;
+};
+
+// Custom hook for handling fetcher responses with toast prevention
+function useFetcherToast(
+  fetcher: ReturnType<typeof useFetcher>,
+  onSuccess: (data: any) => void,
+  onError?: (error: string) => void
+) {
+  const hasShownToastRef = useRef(false);
+  const lastDataRef = useRef<any>(null);
+
+  // Reset toast flag when a new submission starts
+  useEffect(() => {
+    if (fetcher.state === 'submitting') {
+      hasShownToastRef.current = false;
+      lastDataRef.current = null;
+    }
+  }, [fetcher.state]);
+
+  useEffect(() => {
+    const data = fetcher.data as { success?: boolean; error?: string; [key: string]: any } | undefined;
+    
+    // Skip if no data, already shown toast, or same data as before
+    if (!data || hasShownToastRef.current || data === lastDataRef.current) {
+      return;
+    }
+
+    lastDataRef.current = data;
+
+    if (data.success) {
+      hasShownToastRef.current = true;
+      onSuccess(data);
+    } else if (data.error && onError) {
+      hasShownToastRef.current = true;
+      onError(data.error);
+    }
+  }, [fetcher.data, onSuccess, onError]);
+}
+
 export const ResourceCard = memo(function ResourceCard({ resource }: ResourceCardProps) {
   const revalidator = useRevalidator();
   const downloadFetcher = useFetcher();
   const publishFetcher = useFetcher();
   const deleteFetcher = useFetcher();
+  
   const [showMenu, setShowMenu] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
-  const [relativeTime, setRelativeTime] = useState<string>('');
+  const [relativeTime, setRelativeTime] = useState('');
+  
+  const lastPublishIntentRef = useRef<'publish' | 'unpublish' | null>(null);
 
   const isPublished = resource.isPublic ?? false;
-  const fileSizeMB = useMemo(() => {
-    const size = typeof resource.file_size === 'bigint'
-      ? Number(resource.file_size)
-      : resource.file_size;
-    return `${(size / (1024 * 1024)).toFixed(2)} MB`;
-  }, [resource.file_size]);
+  const fileSizeMB = useMemo(() => formatFileSize(resource.file_size), [resource.file_size]);
+  const FileIcon = resource.resource_type === 'PDF' ? File : FileText;
 
-  // Calculate relative time only on client to avoid hydration mismatch
+  // Calculate relative time on client side
   useEffect(() => {
     setRelativeTime(getRelativeTime(resource.created_at));
   }, [resource.created_at]);
 
+  // Handle download
   const handleDownload = useCallback(() => {
     const formData = new FormData();
     formData.append('intent', 'download');
@@ -55,41 +99,48 @@ export const ResourceCard = memo(function ResourceCard({ resource }: ResourceCar
     downloadFetcher.submit(formData, { method: 'POST' });
   }, [resource.Id, downloadFetcher]);
 
-  // Handle download response
-  useEffect(() => {
-    const data = downloadFetcher.data;
-    if (data?.success && data.downloadUrl) {
-      dashboardDownloadToast.success();
-      window.location.href = data.downloadUrl;
-      setTimeout(() => revalidator.revalidate(), 1000);
-    } else if (data?.error) {
-      dashboardDownloadToast.error(data.error);
-    }
-  }, [downloadFetcher.data, revalidator]);
+  useFetcherToast(
+    downloadFetcher,
+    (data: { downloadUrl?: string }) => {
+      if (data.downloadUrl) {
+        dashboardDownloadToast.success();
+        window.location.href = data.downloadUrl;
+        setTimeout(() => revalidator.revalidate(), 1000);
+      }
+    },
+    (error) => dashboardDownloadToast.error(error)
+  );
 
+  // Handle publish/unpublish
   const handlePublish = useCallback(() => {
     setShowMenu(false);
+    const intent = isPublished ? 'unpublish' : 'publish';
+    lastPublishIntentRef.current = intent;
+    
     const formData = new FormData();
-    formData.append('intent', isPublished ? 'unpublish' : 'publish');
+    formData.append('intent', intent);
     formData.append('resourceId', resource.Id.toString());
     publishFetcher.submit(formData, { method: 'POST' });
   }, [isPublished, resource.Id, publishFetcher]);
 
-  // Handle publish/unpublish response
-  useEffect(() => {
-    const data = publishFetcher.data;
-    if (data?.success) {
-      if (isPublished) {
-        dashboardPublishToast.unpublishSuccess(resource.title);
-      } else {
+  useFetcherToast(
+    publishFetcher,
+    () => {
+      if (lastPublishIntentRef.current === 'publish') {
         dashboardPublishToast.publishSuccess(resource.title);
+      } else {
+        dashboardPublishToast.unpublishSuccess(resource.title);
       }
+      lastPublishIntentRef.current = null;
       revalidator.revalidate();
-    } else if (data?.error) {
-      dashboardPublishToast.error(data.error);
+    },
+    (error) => {
+      dashboardPublishToast.error(error);
+      lastPublishIntentRef.current = null;
     }
-  }, [publishFetcher.data, isPublished, resource.title, revalidator]);
+  );
 
+  // Handle delete
   const handleDeleteClick = useCallback(() => {
     setShowMenu(false);
     setShowDeleteConfirm(true);
@@ -105,24 +156,22 @@ export const ResourceCard = memo(function ResourceCard({ resource }: ResourceCar
     deleteFetcher.submit(formData, { method: 'POST' });
   }, [resource.Id, deleteFetcher]);
 
-  // Handle delete response
-  useEffect(() => {
-    const data = deleteFetcher.data;
-    if (data?.success) {
+  useFetcherToast(
+    deleteFetcher,
+    () => {
       dashboardDeleteToast.success(resource.title);
       revalidator.revalidate();
-    } else if (data?.error) {
+    },
+    (error) => {
       setIsDeleting(false);
-      dashboardDeleteToast.error(data.error);
+      dashboardDeleteToast.error(error);
     }
-  }, [deleteFetcher.data, resource.title, revalidator]);
+  );
 
-  const handleDeleteCancel = useCallback(() => {
-    setShowDeleteConfirm(false);
-  }, []);
-
+  // Menu handlers
   const toggleMenu = useCallback(() => setShowMenu(prev => !prev), []);
   const closeMenu = useCallback(() => setShowMenu(false), []);
+  const handleDeleteCancel = useCallback(() => setShowDeleteConfirm(false), []);
 
   if (isDeleting) {
     return (
@@ -140,11 +189,7 @@ export const ResourceCard = memo(function ResourceCard({ resource }: ResourceCar
         <header className="bg-[#d97757]/10 dark:bg-[#d97757]/20 p-5">
           <div className="flex items-start justify-between">
             <div className="w-12 h-12 bg-[#d97757]/20 dark:bg-[#d97757]/30 rounded-lg flex items-center justify-center">
-              {resource.resource_type === 'PDF' ? (
-                <File className="w-6 h-6 text-[#d97757] dark:text-[#c66847]" aria-hidden="true" />
-              ) : (
-                <FileText className="w-6 h-6 text-[#d97757] dark:text-[#c66847]" aria-hidden="true" />
-              )}
+              <FileIcon className="w-6 h-6 text-[#d97757] dark:text-gray-300" aria-hidden="true" />
             </div>
 
             <nav className="relative">
@@ -154,7 +199,7 @@ export const ResourceCard = memo(function ResourceCard({ resource }: ResourceCar
                 aria-label="More options"
                 aria-expanded={showMenu}
               >
-                <MoreVertical className="w-5 h-5 text-[#d97757] dark:text-[#c66847]" aria-hidden="true" />
+                <MoreVertical className="w-5 h-5 text-[#d97757] dark:text-gray-300" aria-hidden="true" />
               </button>
 
               {showMenu && (
@@ -168,7 +213,7 @@ export const ResourceCard = memo(function ResourceCard({ resource }: ResourceCar
                     <li>
                       <button
                         onClick={handlePublish}
-                        className="w-full px-4 py-2.5 text-left text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center gap-3 transition-colors"
+                        className="w-full cursor-pointer px-4 py-2.5 text-left text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center gap-3 transition-colors"
                       >
                         <Globe className="w-4 h-4" aria-hidden="true" />
                         <span>{isPublished ? 'Unpublish' : 'Publish'}</span>
@@ -180,7 +225,7 @@ export const ResourceCard = memo(function ResourceCard({ resource }: ResourceCar
                     <li>
                       <button
                         onClick={handleDeleteClick}
-                        className="w-full px-4 py-2.5 text-left text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 flex items-center gap-3 transition-colors"
+                        className="w-full cursor-pointer px-4 py-2.5 text-left text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 dark:hover:text-red-200 flex items-center gap-3 transition-colors"
                       >
                         <Trash2 className="w-4 h-4" aria-hidden="true" />
                         <span>Delete</span>
@@ -193,12 +238,12 @@ export const ResourceCard = memo(function ResourceCard({ resource }: ResourceCar
           </div>
 
           <div className="mt-4 flex items-center gap-2">
-            <span className="px-3 py-1 bg-[#d97757]/20 dark:bg-[#d97757]/30 rounded-full text-xs text-[#d97757] dark:text-[#c66847] font-medium">
+            <span className="px-3 py-1 bg-[#d97757]/20 dark:bg-[#d97757]/30 rounded-full text-xs text-[#d97757] dark:text-white font-medium">
               {resource.resource_type}
             </span>
             {isPublished && (
-              <span className="px-3 py-1 bg-green-500/20 dark:bg-green-500/30 rounded-full text-xs text-green-700 dark:text-green-400 font-medium flex items-center gap-1.5">
-                <span className="w-1.5 h-1.5 bg-green-600 dark:bg-green-400 rounded-full" aria-hidden="true" />
+              <span className="px-3 py-1 bg-green-500/20 dark:bg-green-500/30 rounded-full text-xs text-green-700 dark:text-white font-medium flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 bg-green-600 dark:bg-green-400  rounded-full" aria-hidden="true" />
                 Published
               </span>
             )}
@@ -239,7 +284,7 @@ export const ResourceCard = memo(function ResourceCard({ resource }: ResourceCar
           <button
             onClick={handleDownload}
             disabled={downloadFetcher.state === 'submitting'}
-            className="w-full px-4 py-2.5 bg-[#d97757] text-white rounded-lg hover:bg-[#c66847] active:bg-[#b55937] transition-colors text-sm font-semibold flex items-center justify-center gap-2 focus:outline-none focus:ring-2 focus:ring-[#d97757]/50 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full px-4 py-2.5 bg-[#d97757] text-white rounded-lg hover:bg-[#c66847] cursor-pointer active:bg-[#b55937] transition-colors text-sm font-semibold flex items-center justify-center gap-2 focus:outline-none focus:ring-2 focus:ring-[#d97757]/50 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <Download className="w-4 h-4" aria-hidden="true" />
             {downloadFetcher.state === 'submitting' ? 'Checking...' : 'Download'}
@@ -248,44 +293,11 @@ export const ResourceCard = memo(function ResourceCard({ resource }: ResourceCar
       </article>
 
       {showDeleteConfirm && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-gray-600/50 dark:bg-gray-600/70 backdrop-blur-sm p-4"
-          onClick={handleDeleteCancel}
-        >
-          <div
-            className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-md w-full p-6 relative"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="flex items-start gap-4 mb-6">
-              <div className="shrink-0 w-12 h-12 bg-[#d97757]/20 dark:bg-[#d97757]/30 rounded-full flex items-center justify-center">
-                <AlertTriangle className="w-6 h-6 text-[#d97757] dark:text-[#c66847]" aria-hidden="true" />
-              </div>
-              <div className="flex-1">
-                <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-2">
-                  Delete Resource
-                </h2>
-                <p className="text-gray-600 dark:text-gray-300 text-sm">
-                  Are you sure you want to delete <strong>"{resource.title}"</strong>? This action cannot be undone.
-                </p>
-              </div>
-            </div>
-
-            <div className="flex items-center justify-end gap-3">
-              <button
-                onClick={handleDeleteCancel}
-                className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors focus:outline-none focus:ring-2 focus:ring-gray-300 dark:focus:ring-gray-600"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleDeleteConfirm}
-                className="px-4 py-2 text-sm font-medium text-white bg-[#d97757] rounded-lg hover:bg-[#c66847] active:bg-[#b55937] transition-colors focus:outline-none focus:ring-2 focus:ring-[#d97757]/50 focus:ring-offset-2"
-              >
-                Delete
-              </button>
-            </div>
-          </div>
-        </div>
+        <DeleteConfirmModal
+          resourceTitle={resource.title}
+          onConfirm={handleDeleteConfirm}
+          onCancel={handleDeleteCancel}
+        />
       )}
     </>
   );

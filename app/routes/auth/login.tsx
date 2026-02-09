@@ -1,7 +1,7 @@
 import type { Route } from './+types/login';
 import { Form, Link, redirect, useActionData, useNavigation } from 'react-router';
 import { useState, useEffect } from 'react';
-import { BookOpen, Mail, Lock, ArrowRight, Eye, EyeOff, Loader2 } from 'lucide-react';
+import { Mail, Lock, ArrowRight, Eye, EyeOff, Loader2 } from 'lucide-react';
 import { authLoginToast } from '~/components/toast-components/auth-login-toast';
 
 import { createLoginSession, getUserId } from '../../utils/cookie-session/session.server';
@@ -29,7 +29,7 @@ export async function action({ request }: Route.ActionArgs) {
       return ({ error: "Email is Required" });
     }
     if (!password) {
-      return ({ error: "Passowrd is Required" });
+      return ({ error: "Password is Required" });
     }
     const user = await prisma.user.findUnique({ where: { email: email as string } });
 
@@ -61,7 +61,7 @@ export default function LoginPage() {
     if (actionData?.error) {
       authLoginToast.error(actionData.error);
     }
-  }, [actionData?.error]);
+  }, [actionData]);
 
   return (
     <Form method="post" className="space-y-5">
