@@ -86,3 +86,22 @@ export async function getResourceById(resourceId: number) {
   });
 }
 
+/**
+ * Get semester counts for a user's resources
+ * @param userId - The user ID
+ * @returns Object with semester numbers as keys and counts as values
+ */
+export async function getUserSemesterCounts(userId: number): Promise<Record<number, number>> {
+  const resources = await prisma.resource.findMany({
+    where: { user_id: userId },
+    select: { semester: true }
+  });
+
+  const counts: Record<number, number> = {};
+  resources.forEach(resource => {
+    counts[resource.semester] = (counts[resource.semester] || 0) + 1;
+  });
+
+  return counts;
+}
+

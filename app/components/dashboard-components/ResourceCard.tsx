@@ -1,6 +1,6 @@
 import { File, FileText, MoreVertical, BookOpen, Calendar, Download, Trash2, Globe, AlertTriangle } from 'lucide-react';
 import { memo, useState, useCallback, useMemo, useEffect } from 'react';
-import { useRevalidator } from 'react-router';
+import { useRevalidator, useFetcher } from 'react-router';
 import { getRelativeTime } from '~/utils/handle-time/relative-time';
 
 interface Resource {
@@ -24,9 +24,11 @@ interface ResourceCardProps {
 
 export const ResourceCard = memo(function ResourceCard({ resource }: ResourceCardProps) {
   const revalidator = useRevalidator();
+  const downloadFetcher = useFetcher();
   const [showMenu, setShowMenu] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [downloadError, setDownloadError] = useState<string | null>(null);
   const [relativeTime, setRelativeTime] = useState<string>('');
 
   const isPublished = resource.isPublic ?? false;
@@ -43,9 +45,25 @@ export const ResourceCard = memo(function ResourceCard({ resource }: ResourceCar
   }, [resource.created_at]);
 
   const handleDownload = useCallback(() => {
-    window.location.href = `/download/${resource.Id}`;
-    setTimeout(() => revalidator.revalidate(), 1000);
-  }, [resource.Id, revalidator]);
+    setDownloadError(null);
+    const formData = new FormData();
+    formData.append('intent', 'download');
+    formData.append('resourceId', resource.Id.toString());
+    downloadFetcher.submit(formData, { method: 'POST' });
+  }, [resource.Id, downloadFetcher]);
+
+  // Handle download response
+  useEffect(() => {
+    const data = downloadFetcher.data;
+    if (data?.success && data.downloadUrl) {
+      // File exists, trigger download
+      window.location.href = data.downloadUrl;
+      setTimeout(() => revalidator.revalidate(), 1000);
+    } else if (data?.error) {
+      // Show error message
+      setDownloadError(data.error);
+    }
+  }, [downloadFetcher.data, revalidator]);
 
   const handlePublish = useCallback(async () => {
     setShowMenu(false);
@@ -199,12 +217,21 @@ export const ResourceCard = memo(function ResourceCard({ resource }: ResourceCar
             </div>
           </div>
 
+          {downloadError && (
+            <div className="mb-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-3">
+              <p className="text-red-600 dark:text-red-400 text-sm font-medium flex items-center gap-2">
+                <AlertTriangle className="w-4 h-4 shrink-0" />
+                {downloadError}
+              </p>
+            </div>
+          )}
           <button
             onClick={handleDownload}
-            className="w-full px-4 py-2.5 bg-[#d97757] text-white rounded-lg hover:bg-[#c66847] active:bg-[#b55937] transition-colors text-sm font-semibold flex items-center justify-center gap-2 focus:outline-none focus:ring-2 focus:ring-[#d97757]/50 focus:ring-offset-2"
+            disabled={downloadFetcher.state === 'submitting'}
+            className="w-full px-4 py-2.5 bg-[#d97757] text-white rounded-lg hover:bg-[#c66847] active:bg-[#b55937] transition-colors text-sm font-semibold flex items-center justify-center gap-2 focus:outline-none focus:ring-2 focus:ring-[#d97757]/50 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <Download className="w-4 h-4" aria-hidden="true" />
-            Download
+            {downloadFetcher.state === 'submitting' ? 'Checking...' : 'Download'}
           </button>
         </section>
       </article>

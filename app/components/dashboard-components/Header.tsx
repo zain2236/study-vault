@@ -8,9 +8,11 @@ interface HeaderProps {
     profileImg?: string | null;
   };
   setSidebarOpen: (open: boolean) => void;
+  searchQuery?: string;
+  onSearchChange?: (value: string) => void;
 }
 
-export function Header({ sidebarOpen, setSidebarOpen , userInfo }: HeaderProps) {
+export function Header({ sidebarOpen, setSidebarOpen , userInfo, searchQuery = '', onSearchChange }: HeaderProps) {
   return (
     <nav className="bg-white dark:bg-gray-700 shadow-sm dark:shadow-gray-900/20 sticky top-0 z-40 border-b border-gray-200/60 dark:border-gray-600/50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -48,6 +50,8 @@ export function Header({ sidebarOpen, setSidebarOpen , userInfo }: HeaderProps) 
               <input
                 type="text"
                 placeholder="Search resources..."
+                value={searchQuery}
+                onChange={(e) => onSearchChange?.(e.target.value)}
                 className="block w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-600 rounded-lg focus:ring-2 focus:ring-[#d97757] focus:border-[#d97757] transition-all outline-none text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-400"
               />
             </div>
@@ -55,7 +59,7 @@ export function Header({ sidebarOpen, setSidebarOpen , userInfo }: HeaderProps) 
 
           {/* User Profile */}
           <div className="flex items-center space-x-2">
-            <User className="w-5 h-5 text-[#d97757]" />
+            <User className="w-5 h-5 text-[#d97757] dark:text-gray-300" />
             <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
               {userInfo.userName}
             </span>
@@ -73,6 +77,8 @@ export function Header({ sidebarOpen, setSidebarOpen , userInfo }: HeaderProps) 
             <input
               type="text"
               placeholder="Search resources..."
+              value={searchQuery}
+              onChange={(e) => onSearchChange?.(e.target.value)}
               className="block w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-600 rounded-lg focus:ring-2 focus:ring-[#d97757] focus:border-[#d97757] transition-all outline-none text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-400"
             />
           </div>

@@ -17,7 +17,7 @@ export interface CursorPaginationResult<T> {
 /**
  * Default page size for pagination
  */
-export const DEFAULT_PAGE_SIZE = 12;
+export const DEFAULT_PAGE_SIZE = 6;
 
 /**
  * Parses cursor from string (resource ID)

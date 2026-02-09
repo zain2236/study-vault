@@ -1,11 +1,12 @@
 import type { Route } from './+types/dashboard-layout';
-import { useState } from 'react';
-import { Outlet, redirect } from 'react-router';
+import { useState, useEffect } from 'react';
+import { Outlet, redirect, useSearchParams, useLocation } from 'react-router';
 
 import { Header } from '~/components/dashboard-components/Header';
 import { Sidebar } from '~/components/dashboard-components/Sidebar';
 import { getUserId } from '~/utils/cookie-session/session.server';
 import prisma from '~/utils/prisma.server';
+import { useDebounce } from '~/utils/hooks/use-debounce';
 
 export async function loader({ request }: Route.LoaderArgs) {
     try {
@@ -34,16 +35,88 @@ export async function loader({ request }: Route.LoaderArgs) {
 
 export default function DashboardLayout({ loaderData }: any) {
     const [sidebarOpen, setSidebarOpen] = useState(false);
+    const [searchParams, setSearchParams] = useSearchParams();
+    const location = useLocation();
+
+    // Get current search and semester from URL
+    const urlSearchQuery = searchParams.get('search') || '';
+    const semesterParam = searchParams.get('semester');
+    const selectedSemester = semesterParam ? parseInt(semesterParam, 10) : null;
+
+    // Local state for search input (for immediate UI updates)
+    const [searchInputValue, setSearchInputValue] = useState(urlSearchQuery);
+    
+    // Sync local state with URL when URL changes (e.g., when semester filter clears search)
+    useEffect(() => {
+        setSearchInputValue(urlSearchQuery);
+    }, [urlSearchQuery]);
+
+    // Debounce the search input value
+    const debouncedSearch = useDebounce(searchInputValue, 500);
+
+    // Update URL when debounced search changes
+    useEffect(() => {
+        const params = new URLSearchParams(searchParams);
+        if (debouncedSearch.trim()) {
+            params.set('search', debouncedSearch.trim());
+        } else {
+            params.delete('search');
+        }
+        setSearchParams(params, { replace: true });
+    }, [debouncedSearch, setSearchParams, searchParams]);
+
+    // Handlers for search and filters
+    const handleSearchChange = (value: string) => {
+        setSearchInputValue(value);
+    };
+
+    const handleSemesterClick = (semester: number | null) => {
+        // Clear search when semester filter changes
+        setSearchInputValue('');
+        const params = new URLSearchParams(searchParams);
+        params.delete('search');
+        if (semester) {
+            params.set('semester', semester.toString());
+        } else {
+            params.delete('semester');
+        }
+        setSearchParams(params, { replace: true });
+    };
+
+    // Get semester counts from dashboard loader data
+    const [semesterCounts, setSemesterCounts] = useState<Record<number, number>>({});
+
+    useEffect(() => {
+        const updateCounts = () => {
+            const counts = (window as any).dashboardSemesterCounts;
+            if (counts) setSemesterCounts(counts);
+        };
+        updateCounts();
+        const interval = setInterval(updateCounts, 300);
+        return () => clearInterval(interval);
+    }, [location.pathname]);
 
     return (
         <div className="min-h-screen bg-[#f5f5f0] dark:bg-gray-800">
             {/* Top Navigation Bar */}
-            <Header sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} userInfo={loaderData} />
+            <Header 
+                sidebarOpen={sidebarOpen} 
+                setSidebarOpen={setSidebarOpen} 
+                userInfo={loaderData}
+                searchQuery={searchInputValue}
+                onSearchChange={handleSearchChange}
+            />
 
             <div className="max-w-7xl mx-auto">
                 <div className="flex">
                     {/* Sidebar */}
-                    <Sidebar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
+                    <Sidebar 
+                        sidebarOpen={sidebarOpen} 
+                        setSidebarOpen={setSidebarOpen}
+                        selectedSemester={selectedSemester}
+                        onSemesterClick={handleSemesterClick}
+                        semesterCounts={semesterCounts}
+                    />
 
                     {/* Main Content */}
                     <main className="flex-1 p-4 lg:p-8">

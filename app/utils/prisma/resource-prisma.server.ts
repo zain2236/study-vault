@@ -1,6 +1,18 @@
 import prisma from '~/utils/prisma.server';
 
 /**
+ * Get resource by ID without incrementing download count
+ * @param resourceId - The resource ID
+ * @returns The resource with file_path and title, or null if not found
+ */
+export async function getResourceForDownload(resourceId: number) {
+  return await prisma.resource.findUnique({
+    where: { Id: resourceId },
+    select: { file_path: true, title: true, isPublic: true }
+  });
+}
+
+/**
  * Increment download count for a resource
  * @param resourceId - The resource ID
  * @returns The updated resource with file_path and title

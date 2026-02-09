@@ -7,11 +7,12 @@ import {
   type CursorPaginationParams,
   type CursorPaginationResult 
 } from '~/utils/pagination/cursor-pagination.server';
-import { getTotalPublicResourceCount, getTotalUserCount } from '~/utils/prisma/resource-prisma.server';
+
 
 export interface ResourcePaginationParams extends CursorPaginationParams {
   semester?: number;
   resourceType?: string;
+  userId?: number; // Optional: if provided, filter by user_id instead of isPublic
 }
 
 /**
@@ -32,10 +33,10 @@ export async function getPaginatedResources(
   const searchConditions = createSearchConditions(searchQuery);
   const hasSearch = Object.keys(searchConditions).length > 0;
 
-  // Build base filters
-  const baseFilters: any = {
-    isPublic: true
-  };
+  // Build base filters - if userId provided, filter by user, otherwise filter by isPublic
+  const baseFilters: any = params.userId
+    ? { user_id: params.userId }
+    : { isPublic: true };
 
   if (semester && semester > 0) {
     baseFilters.semester = semester;
@@ -105,19 +106,27 @@ export async function getPaginatedResources(
   const hasMore = resources.length > limit;
   const items = hasMore ? resources.slice(0, limit) : resources;
 
-  // Transform resources
-  const transformedItems = items.map(transformResource);
-
-  // Get next cursor (ID of the last item)
-  const nextCursor = transformedItems.length > 0 
-    ? transformedItems[transformedItems.length - 1].id.toString()
-    : null;
-
-  return {
-    items: transformedItems,
-    nextCursor: hasMore ? nextCursor : null,
-    hasMore
-  };
+  // Transform resources only if not user-specific (for dashboard, return raw resources)
+  if (params.userId) {
+    // Return raw resources for dashboard
+    const nextCursor = items.length > 0 ? items[items.length - 1].Id.toString() : null;
+    return {
+      items: items as any,
+      nextCursor: hasMore ? nextCursor : null,
+      hasMore
+    };
+  } else {
+    // Transform for public resources page
+    const transformedItems = items.map(transformResource);
+    const nextCursor = transformedItems.length > 0 
+      ? transformedItems[transformedItems.length - 1].id.toString()
+      : null;
+    return {
+      items: transformedItems,
+      nextCursor: hasMore ? nextCursor : null,
+      hasMore
+    };
+  }
 }
 
 /**
