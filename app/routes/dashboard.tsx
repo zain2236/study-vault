@@ -2,6 +2,7 @@ import type { Route } from './+types/dashboard';
 import { redirect, Form, useActionData, useNavigation, useLoaderData, useFetcher, useSearchParams, useNavigate } from 'react-router';
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { Upload, X, Plus, Filter, Loader2 } from 'lucide-react';
+import { dashboardUploadToast } from '~/components/toast-components/dashboard-upload-toast';
 
 import { ResourceCard } from '~/components/dashboard-components/ResourceCard';
 import { getUserId } from '~/utils/cookie-session/session.server';
@@ -368,16 +369,21 @@ export default function Dashboard() {
     fetcher.submit(formData, { method: 'POST' });
   }, [nextCursor, searchParams, fetcher]);
 
-  // Handle close modal after successful upload
+  // Handle upload response and close modal
   useEffect(() => {
     const wasSubmitting = prevNavigationState.current === 'submitting';
     const isNowIdle = navigation.state === 'idle';
     const isNowLoading = navigation.state === 'loading';
     
-    if (wasSubmitting && (isNowIdle || isNowLoading) && !actionData?.error && uploadModalOpen) {
-      setUploadModalOpen(false);
-      setSelectedFile(null);
-      if (fileInputRef.current) fileInputRef.current.value = '';
+    if (wasSubmitting && (isNowIdle || isNowLoading) && uploadModalOpen) {
+      if (actionData?.error) {
+        dashboardUploadToast.error(actionData.error);
+      } else if (!actionData?.error) {
+        dashboardUploadToast.success();
+        setUploadModalOpen(false);
+        setSelectedFile(null);
+        if (fileInputRef.current) fileInputRef.current.value = '';
+      }
     }
     prevNavigationState.current = navigation.state;
   }, [navigation.state, actionData?.error, uploadModalOpen]);
@@ -558,13 +564,6 @@ export default function Dashboard() {
               </button>
             </div>
 
-
-            {/* Show error message from resource modal if there is an error */}
-            {actionData?.error && (
-              <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-3 mb-6">
-                <p className="text-red-600 dark:text-red-400 text-sm font-medium">{actionData.error}</p>
-              </div>
-            )}
 
             <Form method="post" encType="multipart/form-data" className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>

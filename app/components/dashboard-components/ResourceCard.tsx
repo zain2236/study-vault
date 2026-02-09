@@ -2,6 +2,9 @@ import { File, FileText, MoreVertical, BookOpen, Calendar, Download, Trash2, Glo
 import { memo, useState, useCallback, useMemo, useEffect } from 'react';
 import { useRevalidator, useFetcher } from 'react-router';
 import { getRelativeTime } from '~/utils/handle-time/relative-time';
+import { dashboardDownloadToast } from '~/components/toast-components/dashboard-download-toast';
+import { dashboardDeleteToast } from '~/components/toast-components/dashboard-delete-toast';
+import { dashboardPublishToast } from '~/components/toast-components/dashboard-publish-toast';
 
 interface Resource {
   Id: number;
@@ -25,10 +28,11 @@ interface ResourceCardProps {
 export const ResourceCard = memo(function ResourceCard({ resource }: ResourceCardProps) {
   const revalidator = useRevalidator();
   const downloadFetcher = useFetcher();
+  const publishFetcher = useFetcher();
+  const deleteFetcher = useFetcher();
   const [showMenu, setShowMenu] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
-  const [downloadError, setDownloadError] = useState<string | null>(null);
   const [relativeTime, setRelativeTime] = useState<string>('');
 
   const isPublished = resource.isPublic ?? false;
@@ -45,7 +49,6 @@ export const ResourceCard = memo(function ResourceCard({ resource }: ResourceCar
   }, [resource.created_at]);
 
   const handleDownload = useCallback(() => {
-    setDownloadError(null);
     const formData = new FormData();
     formData.append('intent', 'download');
     formData.append('resourceId', resource.Id.toString());
@@ -56,47 +59,63 @@ export const ResourceCard = memo(function ResourceCard({ resource }: ResourceCar
   useEffect(() => {
     const data = downloadFetcher.data;
     if (data?.success && data.downloadUrl) {
-      // File exists, trigger download
+      dashboardDownloadToast.success();
       window.location.href = data.downloadUrl;
       setTimeout(() => revalidator.revalidate(), 1000);
     } else if (data?.error) {
-      // Show error message
-      setDownloadError(data.error);
+      dashboardDownloadToast.error(data.error);
     }
   }, [downloadFetcher.data, revalidator]);
 
-  const handlePublish = useCallback(async () => {
+  const handlePublish = useCallback(() => {
     setShowMenu(false);
     const formData = new FormData();
     formData.append('intent', isPublished ? 'unpublish' : 'publish');
     formData.append('resourceId', resource.Id.toString());
+    publishFetcher.submit(formData, { method: 'POST' });
+  }, [isPublished, resource.Id, publishFetcher]);
 
-    await fetch('/user/dashboard', { method: 'POST', body: formData });
-    revalidator.revalidate();
-  }, [isPublished, resource.Id, revalidator]);
+  // Handle publish/unpublish response
+  useEffect(() => {
+    const data = publishFetcher.data;
+    if (data?.success) {
+      if (isPublished) {
+        dashboardPublishToast.unpublishSuccess(resource.title);
+      } else {
+        dashboardPublishToast.publishSuccess(resource.title);
+      }
+      revalidator.revalidate();
+    } else if (data?.error) {
+      dashboardPublishToast.error(data.error);
+    }
+  }, [publishFetcher.data, isPublished, resource.title, revalidator]);
 
   const handleDeleteClick = useCallback(() => {
     setShowMenu(false);
     setShowDeleteConfirm(true);
   }, []);
 
-  const handleDeleteConfirm = useCallback(async () => {
+  const handleDeleteConfirm = useCallback(() => {
     setShowDeleteConfirm(false);
     setIsDeleting(true);
 
     const formData = new FormData();
     formData.append('intent', 'delete');
     formData.append('resourceId', resource.Id.toString());
+    deleteFetcher.submit(formData, { method: 'POST' });
+  }, [resource.Id, deleteFetcher]);
 
-    const response = await fetch('/user/dashboard', { method: 'POST', body: formData });
-
-    if (response.ok) {
+  // Handle delete response
+  useEffect(() => {
+    const data = deleteFetcher.data;
+    if (data?.success) {
+      dashboardDeleteToast.success(resource.title);
       revalidator.revalidate();
-    } else {
+    } else if (data?.error) {
       setIsDeleting(false);
-      alert('Failed to delete resource. Please try again.');
+      dashboardDeleteToast.error(data.error);
     }
-  }, [resource.Id, revalidator]);
+  }, [deleteFetcher.data, resource.title, revalidator]);
 
   const handleDeleteCancel = useCallback(() => {
     setShowDeleteConfirm(false);
@@ -217,14 +236,6 @@ export const ResourceCard = memo(function ResourceCard({ resource }: ResourceCar
             </div>
           </div>
 
-          {downloadError && (
-            <div className="mb-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-3">
-              <p className="text-red-600 dark:text-red-400 text-sm font-medium flex items-center gap-2">
-                <AlertTriangle className="w-4 h-4 shrink-0" />
-                {downloadError}
-              </p>
-            </div>
-          )}
           <button
             onClick={handleDownload}
             disabled={downloadFetcher.state === 'submitting'}

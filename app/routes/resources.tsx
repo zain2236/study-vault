@@ -1,5 +1,6 @@
 import { useState, useMemo, useCallback, useEffect } from 'react';
 import { useLoaderData, useFetcher, useSearchParams } from 'react-router';
+import { resourcesDownloadToast } from '~/components/toast-components/resources-download-toast';
 
 import { BrowseResourceCard } from '~/components/resources-page-components/BrowseResourceCard';
 import { PageHeader } from '~/components/resources-page-components/PageHeader';
@@ -93,9 +94,8 @@ export default function BrowseResourcesPage() {
   const fetcher = useFetcher<typeof action>();
   const [searchParams, setSearchParams] = useSearchParams();
   
-  // Get error message from URL params (from download redirects)
+  // Handle error messages from URL params (from download redirects)
   const errorParam = searchParams.get('error');
-  const [showError, setShowError] = useState(!!errorParam);
   
   // Error messages mapping
   const errorMessages: Record<string, string> = {
@@ -106,9 +106,10 @@ export default function BrowseResourcesPage() {
     'download-failed': 'Download failed. Please try again later.'
   };
 
-  // Clear error from URL after showing it
+  // Show toast and clear error from URL
   useEffect(() => {
-    if (errorParam) {
+    if (errorParam && errorMessages[errorParam]) {
+      resourcesDownloadToast.error(errorMessages[errorParam]);
       const params = new URLSearchParams(searchParams);
       params.delete('error');
       setSearchParams(params, { replace: true });
@@ -218,26 +219,6 @@ export default function BrowseResourcesPage() {
       <div className="fixed bottom-20 left-10 w-96 h-96 bg-[#d97757] opacity-5 dark:opacity-10 rounded-full blur-3xl pointer-events-none"></div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        {/* Error message from download redirects */}
-        {showError && errorParam && errorMessages[errorParam] && (
-          <div className="mb-6 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4 flex items-center justify-between">
-            <div className="flex items-center space-x-3">
-              <svg className="w-5 h-5 text-red-600 dark:text-red-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-              <p className="text-red-600 dark:text-red-400 text-sm font-medium">{errorMessages[errorParam]}</p>
-            </div>
-            <button
-              onClick={() => setShowError(false)}
-              className="text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300"
-            >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
-          </div>
-        )}
-
         <PageHeader
           resourceCount={loaderData.totalCount}
           filters={filters}
