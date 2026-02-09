@@ -29,6 +29,13 @@ export function Navbar({ isLoggedIn } : any) {
           {/* Desktop Menu */}
           <div className="hidden md:flex items-center space-x-2">
           <Link
+              to="/"
+              className="px-4 py-2 rounded-lg font-heading font-medium text-gray-700 dark:text-gray-100 hover:text-[#d97757] dark:hover:text-[#d97757] hover:bg-[#f5f5f0] dark:hover:bg-gray-700/50 transition-all relative group"
+            >
+              Home
+              <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-[#d97757] group-hover:w-full transition-all duration-300"></span>
+            </Link>
+          <Link
               to="/resources"
               className="px-4 py-2 rounded-lg font-heading font-medium text-gray-700 dark:text-gray-100 hover:text-[#d97757] dark:hover:text-[#d97757] hover:bg-[#f5f5f0] dark:hover:bg-gray-700/50 transition-all relative group"
             >
@@ -46,10 +53,9 @@ export function Navbar({ isLoggedIn } : any) {
             <div className="h-6 w-px bg-gray-300 dark:bg-gray-700 mx-2"></div>
 
             {/* // If user is logged in then show dashboard button  */}
-
             {isLoggedIn ? (<NavLink
               to="/user/dashboard"
-              className="flex items-center space-x-2 bg-gradient-to-r from-[#d97757] to-[#c66847] text-white px-6 py-2.5 rounded-lg font-heading font-semibold hover:shadow-md hover:shadow-[#d97757]/20 transition-all transform hover:scale-[1.02]"
+              className="flex items-center space-x-2 bg-linear-to-r from-[#d97757] to-[#c66847] text-white px-6 py-2.5 rounded-lg font-heading font-semibold hover:shadow-md hover:shadow-[#d97757]/20 transition-all transform hover:scale-[1.02]"
             >
               <User className="w-4 h-4" />
               <span>Dashboard</span>
@@ -63,7 +69,7 @@ export function Navbar({ isLoggedIn } : any) {
 
               <NavLink
                 to="/sign-up"
-                className="flex items-center space-x-2 bg-gradient-to-r from-[#d97757] to-[#c66847] text-white px-6 py-2.5 rounded-lg font-heading font-semibold hover:shadow-md hover:shadow-[#d97757]/20 transition-all transform hover:scale-[1.02]"
+                className="flex items-center space-x-2 bg-linear-to-r from-[#d97757] to-[#c66847] text-white px-6 py-2.5 rounded-lg font-heading font-semibold hover:shadow-md hover:shadow-[#d97757]/20 transition-all transform hover:scale-[1.02]"
               >
                 <span>Get Started</span>
                 <Sparkles className="w-4 h-4" />
@@ -85,32 +91,32 @@ export function Navbar({ isLoggedIn } : any) {
         {mobileMenuOpen && (
           <div className="md:hidden py-4 space-y-2 border-t border-gray-100 dark:border-gray-700 animate-fadeIn">
             <Link
-              to="#features"
+              to="/"
+              className="block px-4 py-3 rounded-lg text-gray-700 dark:text-gray-100 hover:text-[#d97757] dark:hover:text-[#d97757] hover:bg-[#f5f5f0] dark:hover:bg-gray-700/50 transition-all font-heading font-medium"
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              Home
+            </Link>
+            <Link
+              to="/resources"
+              className="block px-4 py-3 rounded-lg text-gray-700 dark:text-gray-100 hover:text-[#d97757] dark:hover:text-[#d97757] hover:bg-[#f5f5f0] dark:hover:bg-gray-700/50 transition-all font-heading font-medium"
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              Browse Resources
+            </Link>
+            <Link
+              to="/features"
               className="block px-4 py-3 rounded-lg text-gray-700 dark:text-gray-100 hover:text-[#d97757] dark:hover:text-[#d97757] hover:bg-[#f5f5f0] dark:hover:bg-gray-700/50 transition-all font-heading font-medium"
               onClick={() => setMobileMenuOpen(false)}
             >
               Features
-            </Link>
-            <Link
-              to="#how-it-works"
-              className="block px-4 py-3 rounded-lg text-gray-700 dark:text-gray-100 hover:text-[#d97757] dark:hover:text-[#d97757] hover:bg-[#f5f5f0] dark:hover:bg-gray-700/50 transition-all font-heading font-medium"
-              onClick={() => setMobileMenuOpen(false)}
-            >
-              How It Works
-            </Link>
-            <Link
-              to="#benefits"
-              className="block px-4 py-3 rounded-lg text-gray-700 dark:text-gray-100 hover:text-[#d97757] dark:hover:text-[#d97757] hover:bg-[#f5f5f0] dark:hover:bg-gray-700/50 transition-all font-heading font-medium"
-              onClick={() => setMobileMenuOpen(false)}
-            >
-              Benefits
             </Link>
 
             <div className="h-px bg-gray-200 dark:bg-gray-700 my-2"></div>
 
               {isLoggedIn ? ( <Link
               to="/user/dashboard"
-              className="flex items-center justify-center space-x-2 bg-gradient-to-r from-[#d97757] to-[#c66847] text-white px-6 py-3 rounded-lg font-heading font-semibold hover:shadow-md hover:shadow-[#d97757]/20 transition-all mx-2"
+              className="flex items-center justify-center space-x-2 bg-linear-to-r from-[#d97757] to-[#c66847] text-white px-6 py-3 rounded-lg font-heading font-semibold hover:shadow-md hover:shadow-[#d97757]/20 transition-all mx-2"
               onClick={() => setMobileMenuOpen(false)}
             >
               <User className="w-4 h-4" />

@@ -1,5 +1,5 @@
 import { File, FileText, MoreVertical, BookOpen, Calendar, Download, Trash2, Globe, AlertTriangle } from 'lucide-react';
-import { memo, useState, useCallback, useMemo } from 'react';
+import { memo, useState, useCallback, useMemo, useEffect } from 'react';
 import { useRevalidator } from 'react-router';
 import { getRelativeTime } from '~/utils/handle-time/relative-time';
 
@@ -27,6 +27,7 @@ export const ResourceCard = memo(function ResourceCard({ resource }: ResourceCar
   const [showMenu, setShowMenu] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [relativeTime, setRelativeTime] = useState<string>('');
 
   const isPublished = resource.isPublic ?? false;
   const fileSizeMB = useMemo(() => {
@@ -35,6 +36,11 @@ export const ResourceCard = memo(function ResourceCard({ resource }: ResourceCar
       : resource.file_size;
     return `${(size / (1024 * 1024)).toFixed(2)} MB`;
   }, [resource.file_size]);
+
+  // Calculate relative time only on client to avoid hydration mismatch
+  useEffect(() => {
+    setRelativeTime(getRelativeTime(resource.created_at));
+  }, [resource.created_at]);
 
   const handleDownload = useCallback(() => {
     window.location.href = `/download/${resource.Id}`;
@@ -183,7 +189,7 @@ export const ResourceCard = memo(function ResourceCard({ resource }: ResourceCar
               <span>{fileSizeMB}</span>
               <span aria-hidden="true">•</span>
               <time dateTime={new Date(resource.created_at).toISOString()}>
-                {getRelativeTime(resource.created_at)}
+                {relativeTime || '...'}
               </time>
             </div>
 

@@ -1,7 +1,7 @@
-export function getRelativeTime(date: Date | string): string {
-  const now = new Date();
+export function getRelativeTime(date: Date | string, now?: Date): string {
+  const currentTime = now || new Date();
   const past = new Date(date);
-  const diffInSeconds = Math.floor((now.getTime() - past.getTime()) / 1000);
+  const diffInSeconds = Math.floor((currentTime.getTime() - past.getTime()) / 1000);
 
   if (diffInSeconds < 60) {
     return 'just now';

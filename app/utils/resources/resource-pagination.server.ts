@@ -7,6 +7,7 @@ import {
   type CursorPaginationParams,
   type CursorPaginationResult 
 } from '~/utils/pagination/cursor-pagination.server';
+import { getTotalPublicResourceCount, getTotalUserCount } from '~/utils/prisma/resource-prisma.server';
 
 export interface ResourcePaginationParams extends CursorPaginationParams {
   semester?: number;
@@ -121,19 +122,13 @@ export async function getPaginatedResources(
 
 /**
  * Gets total count of public resources (for stats)
+ * Re-exported from resource-prisma.server for backward compatibility
  */
-export async function getTotalResourceCount(): Promise<number> {
-  return prisma.resource.count({
-    where: {
-      isPublic: true
-    }
-  });
-}
+export { getTotalPublicResourceCount as getTotalResourceCount } from '~/utils/prisma/resource-prisma.server';
 
 /**
  * Gets total count of users (for stats)
+ * Re-exported from resource-prisma.server for backward compatibility
  */
-export async function getTotalUserCount(): Promise<number> {
-  return prisma.user.count();
-}
+export { getTotalUserCount } from '~/utils/prisma/resource-prisma.server';
 

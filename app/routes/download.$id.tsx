@@ -3,7 +3,7 @@ import { redirect } from 'react-router';
 import { readFile } from 'fs/promises';
 import { join } from 'path';
 import { existsSync } from 'fs';
-import prisma from '~/utils/prisma/prisma.server';
+import { incrementResourceDownload } from '~/utils/prisma/resource-prisma.server';
 
 function getMimeType(filePath: string): string {
   const ext = filePath.substring(filePath.lastIndexOf('.')).toLowerCase();
@@ -26,11 +26,7 @@ export async function loader({ params }: Route.LoaderArgs) {
       return redirect('/user/dashboard');
     }
 
-    const resource = await prisma.resource.update({
-      where: { Id: resourceId },
-      data: { downloads: { increment: 1 } },
-      select: { file_path: true, title: true }
-    });
+    const resource = await incrementResourceDownload(resourceId);
 
     if (!resource) {
       return redirect('/user/dashboard');

@@ -11,8 +11,15 @@ import {
 
 import { ResourceCard } from '~/components/dashboard-components/ResourceCard';
 import { getUserId } from '~/utils/cookie-session/session.server';
-import prisma from '~/utils/prisma/prisma.server';
 import { saveFileLocally, validateFile } from '~/utils/upload-file/file-upload.server';
+import { deleteFileSafely } from '~/utils/delete-file/file-delete.server';
+import {
+  getUserResources,
+  getUserResourceById,
+  updateResourcePublishStatus,
+  createResource,
+  deleteResource
+} from '~/utils/prisma/dashboard-prisma.server';
 
 export function meta({ }: Route.MetaArgs) {
   return [
@@ -29,10 +36,7 @@ export async function loader({ request }: Route.LoaderArgs) {
       return redirect('/login')
     }
   
-    const resources = await prisma.resource.findMany({ 
-      where: { user_id: userId },
-      orderBy: { created_at: 'desc' }
-    })
+    const resources = await getUserResources(userId)
     return { resources: resources || [], error: null }
   }
    catch(error) {
@@ -57,18 +61,13 @@ export async function action({ request }: Route.ActionArgs) {
         return { error: 'Resource ID is required' }
       }
 
-      const resource = await prisma.resource.findFirst({
-        where: { Id: Number(resourceId), user_id: userId }
-      })
+      const resource = await getUserResourceById(Number(resourceId), userId)
 
       if (!resource) {
         return { error: 'Resource not found' }
       }
 
-      await prisma.resource.update({
-        where: { Id: Number(resourceId) },
-        data: { isPublic: intent === 'publish' }
-      })
+      await updateResourcePublishStatus(Number(resourceId), intent === 'publish')
 
       return { success: true }
     }
@@ -80,17 +79,17 @@ export async function action({ request }: Route.ActionArgs) {
         return { error: 'Resource ID is required' }
       }
 
-      const resource = await prisma.resource.findFirst({
-        where: { Id: Number(resourceId), user_id: userId }
-      })
+      const resource = await getUserResourceById(Number(resourceId), userId)
 
       if (!resource) {
         return { error: 'Resource not found' }
       }
 
-      await prisma.resource.delete({
-        where: { Id: Number(resourceId) }
-      })
+      // Delete the file from storage
+      await deleteFileSafely(resource.file_path)
+
+      // Delete the database record
+      await deleteResource(Number(resourceId))
 
       return { success: true }
     }
@@ -119,16 +118,14 @@ export async function action({ request }: Route.ActionArgs) {
     const { filePath, fileSize } = await saveFileLocally(file as any)
 
     // Create resource record in database
-    const resource = await prisma.resource.create({
-      data: {
-        title: title as string,
-        semester: Number(semester),
-        subject: subject as string,
-        resource_type: resource_type as string,
-        file_path: filePath,
-        file_size: BigInt(fileSize),
-        user_id: userId as number,
-      }
+    const resource = await createResource({
+      title: title as string,
+      semester: Number(semester),
+      subject: subject as string,
+      resource_type: resource_type as string,
+      file_path: filePath,
+      file_size: BigInt(fileSize),
+      user_id: userId as number,
     })
 
     if (!resource) {

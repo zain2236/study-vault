@@ -1,11 +1,11 @@
-import type { Route } from "./+types/home";
+import type { Route } from "./+types/index";
 
 import { Hero } from '../components/home-page-components/Hero';
 import { Features } from '../components/home-page-components/Features';
 import { HowItWorks } from '../components/home-page-components/HowItWorks';
 import { Benefits } from '../components/home-page-components/Benefits';
 import { CallToAction } from '../components/home-page-components/CallToAction';
-import prisma from "~/utils/prisma/prisma.server";
+import { getTotalResourceCount, getTotalUserCount } from '~/utils/prisma/resource-prisma.server';
 
 
 
@@ -19,8 +19,10 @@ export function meta({}: Route.MetaArgs) {
 
 export async function loader() {
   try {
-    const userCount = await prisma.user.count();
-    const resourceCount = await prisma.resource.count();
+    const [userCount, resourceCount] = await Promise.all([
+      getTotalUserCount(),
+      getTotalResourceCount()
+    ]);
     return {
       userCount,
       resourceCount
