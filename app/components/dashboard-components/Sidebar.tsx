@@ -4,9 +4,12 @@ import { Form, Link } from 'react-router';
 interface SidebarProps {
   sidebarOpen: boolean;
   setSidebarOpen: (open: boolean) => void;
+  selectedSemester?: number | null;
+  onSemesterClick?: (semester: number | null) => void;
+  semesterCounts?: Record<number, number>;
 }
 
-export function Sidebar({ sidebarOpen, setSidebarOpen }: SidebarProps) {
+export function Sidebar({ sidebarOpen, setSidebarOpen, selectedSemester, onSemesterClick, semesterCounts = {} }: SidebarProps) {
   return (
     <>
       {/* Sidebar - Desktop */}
@@ -30,18 +33,35 @@ export function Sidebar({ sidebarOpen, setSidebarOpen }: SidebarProps) {
             <p className="px-4 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">
               Quick Filters
             </p>
-            <a href="#" className="flex items-center justify-between px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600 rounded-lg transition-colors">
-              <span>Semester 3</span>
-              <span className="text-xs bg-gray-200 dark:bg-gray-600 px-2 py-1 rounded-full text-gray-700 dark:text-gray-300">12</span>
-            </a>
-            <a href="#" className="flex items-center justify-between px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600 rounded-lg transition-colors">
-              <span>Semester 4</span>
-              <span className="text-xs bg-gray-200 dark:bg-gray-600 px-2 py-1 rounded-full text-gray-700 dark:text-gray-300">8</span>
-            </a>
-            <a href="#" className="flex items-center justify-between px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600 rounded-lg transition-colors">
-              <span>Semester 5</span>
-              <span className="text-xs bg-gray-200 dark:bg-gray-600 px-2 py-1 rounded-full text-gray-700 dark:text-gray-300">5</span>
-            </a>
+            <button
+              onClick={() => onSemesterClick?.(null)}
+              className={`w-full flex items-center justify-between px-4 py-2 text-sm rounded-lg transition-colors ${
+                selectedSemester === null
+                  ? 'bg-[#d97757]/10 dark:bg-[#d97757]/20 text-[#d97757]'
+                  : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600'
+              }`}
+            >
+              <span>All Semesters</span>
+            </button>
+            {Object.keys(semesterCounts)
+              .map(Number)
+              .sort((a, b) => a - b)
+              .map((sem) => (
+                <button
+                  key={sem}
+                  onClick={() => onSemesterClick?.(sem)}
+                  className={`w-full flex items-center justify-between px-4 py-2 text-sm rounded-lg transition-colors ${
+                    selectedSemester === sem
+                      ? 'bg-[#d97757]/10 dark:bg-[#d97757]/20 text-[#d97757]'
+                      : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600'
+                  }`}
+                >
+                  <span>Semester {sem}</span>
+                  <span className="text-xs bg-gray-200 dark:bg-gray-600 px-2 py-1 rounded-full text-gray-700 dark:text-gray-300">
+                    {semesterCounts[sem]}
+                  </span>
+                </button>
+              ))}
           </div>
         </nav>
 

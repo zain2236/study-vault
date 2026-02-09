@@ -8,6 +8,8 @@ import {
 
 import type { Route } from "./+types/root";
 import NotFoundPageComponent from "./routes/_404";
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import "./app.css";
 
 export const links: Route.LinksFunction = () => [
@@ -17,11 +19,7 @@ export const links: Route.LinksFunction = () => [
     href: "https://fonts.gstatic.com",
     crossOrigin: "anonymous",
   },
-  {
-    rel: "stylesheet",
-    href: "https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap",
-  },
-   { rel: "stylesheet", href: "/app/app.css" },
+  { rel: "stylesheet", href: "/app/app.css" },
    { rel: "icon", href: "/assests/fav-icon.png", type: "image/png" },
 ];
 
@@ -37,6 +35,18 @@ export function Layout({ children }: { children: React.ReactNode }) {
       </head>
       <body suppressHydrationWarning>
         {children}
+        <ToastContainer
+          position="top-right"
+          autoClose={3000}
+          hideProgressBar={false}
+          newestOnTop={false}
+          closeOnClick
+          rtl={false}
+          pauseOnFocusLoss
+          draggable
+          pauseOnHover
+          theme="light"
+        />
         <ScrollRestoration />
         <Scripts />
       </body>

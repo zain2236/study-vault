@@ -4,7 +4,7 @@ export default [
 
     // Main Layout
     layout('./layout/main-layout.tsx', [
-        index("./routes/home.tsx"),
+        index("./routes/index.tsx"),
         route("resources", "routes/resources.tsx"),
         route("features", "routes/features.tsx"),
     ]),

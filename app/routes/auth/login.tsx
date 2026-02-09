@@ -1,7 +1,8 @@
 import type { Route } from './+types/login';
 import { Form, Link, redirect, useActionData, useNavigation } from 'react-router';
-import { useState } from 'react';
-import { BookOpen, Mail, Lock, ArrowRight, Eye, EyeOff, Loader2 } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Mail, Lock, ArrowRight, Eye, EyeOff, Loader2 } from 'lucide-react';
+import { authLoginToast } from '~/components/toast-components/auth-login-toast';
 
 import { createLoginSession, getUserId } from '../../utils/cookie-session/session.server';
 import prisma from '../../utils/prisma.server';
@@ -28,7 +29,7 @@ export async function action({ request }: Route.ActionArgs) {
       return ({ error: "Email is Required" });
     }
     if (!password) {
-      return ({ error: "Passowrd is Required" });
+      return ({ error: "Password is Required" });
     }
     const user = await prisma.user.findUnique({ where: { email: email as string } });
 
@@ -55,6 +56,13 @@ export default function LoginPage() {
   const isSubmitting = navigation.state === 'submitting';
   const [showPassword, setShowPassword] = useState(false);
 
+  // Handle error messages with toast
+  useEffect(() => {
+    if (actionData?.error) {
+      authLoginToast.error(actionData.error);
+    }
+  }, [actionData]);
+
   return (
     <Form method="post" className="space-y-5">
       {/* Logo & Header inside card */}
@@ -71,13 +79,6 @@ export default function LoginPage() {
           Sign in to access your study resources
         </p>
       </div>
-
-      {/* Error Message */}
-      {actionData?.error ? (
-        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-3 mb-2">
-          <p className="text-red-600 dark:text-red-400 text-sm font-medium">{actionData.error}</p>
-        </div>
-      ) : (<>&nbsp;</>)}
 
       {/* Email Input */}
       <div className="space-y-1.5">
