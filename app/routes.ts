@@ -26,6 +26,9 @@ export default [
     // Download route (no layout needed) - resource route for file downloads
     route("download/:id", "routes/download.$id.tsx"),
 
+    // R2 upload API route (server action for presigned URLs + confirm)
+    route("api.r2-upload", "routes/api.r2-upload.tsx"),
+
 
     route("*", "routes/_404.tsx"),
 ] satisfies RouteConfig;

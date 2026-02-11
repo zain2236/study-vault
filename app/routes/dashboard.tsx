@@ -1,16 +1,15 @@
 import type { Route } from './+types/dashboard';
-import { redirect, Form, useActionData, useNavigation, useLoaderData, useFetcher, useSearchParams, useNavigate } from 'react-router';
+import { redirect, Form, useLoaderData, useFetcher, useSearchParams, useNavigate } from 'react-router';
 import { useState, useRef, useEffect } from 'react';
 import { Upload, X, Plus, Filter, Loader2 } from 'lucide-react';
 
 import { ResourceCard } from '~/components/dashboard-components/ResourceCard';
 import { getUserId } from '~/utils/cookie-session/session.server';
-import { saveFileLocally, validateFile } from '~/utils/upload-file/file-upload.server';
 import { deleteFileSafely } from '~/utils/delete-file/file-delete.server';
 import {
   getUserResourceById,
   updateResourcePublishStatus,
-  createResource,
+
   deleteResource,
   getUserSemesterCounts
 } from '~/utils/prisma/dashboard-prisma.server';
@@ -66,11 +65,11 @@ export async function loader({ request }: Route.LoaderArgs) {
 
 export async function action({ request }: Route.ActionArgs) {
   try {
-    const userId = await getUserId(request)
-    if (!userId) return redirect('/login')
+    const userId = await getUserId(request);
+    if (!userId) return redirect('/login');
 
-    const data = await request.formData()
-    const intent = data.get('intent')
+    const data = await request.formData();
+    const intent = data.get('intent');
 
     // Handle load more
     if (intent === 'load-more') {
@@ -123,8 +122,8 @@ export async function action({ request }: Route.ActionArgs) {
 
     // Handle download
     if (intent === 'download') {
-      const resourceId = data.get('resourceId')
-      if (!resourceId) return { error: 'Resource ID is required' }
+      const resourceId = data.get('resourceId');
+      if (!resourceId) return { error: 'Resource ID is required' };
 
       try {
         // Verify user owns the resource
@@ -133,17 +132,24 @@ export async function action({ request }: Route.ActionArgs) {
           return { error: 'Resource not found or you do not have permission to download it.' };
         }
 
-        // Check if file exists in storage
-        const { fileExists } = await import('~/utils/download/download-helpers.server');
-        if (!fileExists(resource.file_path)) {
+        const filePath = resource.file_path;
+
+        // Check if file exists in storage (local or R2)
+        let exists = false;
+        if (filePath.startsWith('/uploads/')) {
+          const { fileExists } = await import('~/utils/download/download-helpers.server');
+          exists = fileExists(filePath);
+        } else {
+          const { objectExistsInR2 } = await import('~/utils/r2/r2.server');
+          exists = await objectExistsInR2(filePath);
+        }
+
+        if (!exists) {
           return { error: 'File not found in storage. The file may have been deleted.' };
         }
 
-        // File exists, increment download count and return success
-        const { incrementResourceDownload } = await import('~/utils/prisma/resource-prisma.server');
-        await incrementResourceDownload(Number(resourceId));
-
-        // Return download URL for client to handle
+        // File exists; return download URL for client to handle.
+        // The actual download route (/download/:id) is responsible for incrementing download count.
         return {
           success: true,
           downloadUrl: `/download/${resourceId}`
@@ -155,19 +161,19 @@ export async function action({ request }: Route.ActionArgs) {
 
     // Handle delete
     if (intent === 'delete') {
-      const resourceId = data.get('resourceId')
-      if (!resourceId) return { error: 'Resource ID is required' }
+      const resourceId = data.get('resourceId');
+      if (!resourceId) return { error: 'Resource ID is required' };
 
-      const resource = await getUserResourceById(Number(resourceId), userId)
-      if (!resource) return { error: 'Resource not found' }
+      const resource = await getUserResourceById(Number(resourceId), userId);
+      if (!resource) return { error: 'Resource not found' };
 
       // Try to delete file from storage (non-blocking)
-      await deleteFileSafely(resource.file_path)
+      await deleteFileSafely(resource.file_path);
 
       // Delete from database (always attempt, even if file deletion failed)
       try {
-        await deleteResource(Number(resourceId))
-        return { success: true }
+        await deleteResource(Number(resourceId));
+        return { success: true };
       } catch (dbError) {
         return {
           error: 'Service is down. Please try again.'
@@ -175,77 +181,8 @@ export async function action({ request }: Route.ActionArgs) {
       }
     }
 
-    // Handle upload
-    const title = data.get('title')
-    const semester = data.get('semester')
-    const subject = data.get('subject')
-    const resource_type = data.get('resource_type')
-    const file = data.get('file') as File
-
-    if (!title || !semester || !subject || !resource_type || !file) {
-      return ({ error: 'All fields are required' })
-    }
-
-    if (!file || file.size === 0) {
-      return ({ error: 'Please select a file to upload' })
-    }
-
-    const { valid, error } = validateFile(file as File)
-    if (!valid) return ({ error: error as string })
-
-    // Save file to local storage with error handling
-    let filePath: string;
-    let fileSize: number;
-
-    try {
-      const fileResult = await saveFileLocally(file as File);
-      filePath = fileResult.filePath;
-      fileSize = fileResult.fileSize;
-    } catch (storageError) {
-      const { getStorageErrorMessage } = await import('~/utils/storage/storage-error-handler.server');
-      return {
-        error: getStorageErrorMessage(storageError)
-      };
-    }
-
-    // Create resource in database with error handling
-    let resource;
-    try {
-      resource = await createResource({
-        title: title as string,
-        semester: Number(semester),
-        subject: subject as string,
-        resource_type: resource_type as string,
-        file_path: filePath,
-        file_size: BigInt(fileSize),
-        user_id: userId as number,
-      });
-    } catch (dbError) {
-      // If database creation fails, try to clean up the uploaded file
-      try {
-        const { deleteFileSafely } = await import('~/utils/delete-file/file-delete.server');
-        await deleteFileSafely(filePath);
-      } catch (cleanupError) {
-        // Silently handle cleanup error
-      }
-
-      return {
-        error: 'Service is down. Please try again.'
-      };
-    }
-
-    if (!resource) {
-      // Clean up file if resource creation failed
-      try {
-        const { deleteFileSafely } = await import('~/utils/delete-file/file-delete.server');
-        await deleteFileSafely(filePath);
-      } catch (cleanupError) {
-        // Silently handle cleanup error
-      }
-      return ({ error: 'Service is down. Please try again.' });
-    }
-
-    return redirect('/user/dashboard')
+    // No other intents handled here
+    return { error: 'Invalid action.' };
   } catch (error) {
     return {
       error: 'Service is down. Please try again.'
@@ -254,10 +191,8 @@ export async function action({ request }: Route.ActionArgs) {
 }
 
 export default function Dashboard() {
-  const actionData = useActionData<typeof action>();
   const loaderData = useLoaderData<typeof loader>();
   const fetcher = useFetcher<typeof action>();
-  const navigation = useNavigation();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
 
@@ -265,13 +200,14 @@ export default function Dashboard() {
   const [uploadModalOpen, setUploadModalOpen] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [uploadMessage, setUploadMessage] = useState<{ type: 'error' | 'success'; text: string } | null>(null);
-  const prevSubmittingRef = useRef(false);
   const [allResources, setAllResources] = useState(loaderData.resources);
   const [nextCursor, setNextCursor] = useState(loaderData.nextCursor);
   const [hasMore, setHasMore] = useState(loaderData.hasMore);
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [uploadPhase, setUploadPhase] = useState<'idle' | 'prepare' | 'upload' | 'confirm'>('idle');
 
   const resourceType = searchParams.get('type') || null;
-  const isSubmitting = navigation.state === 'submitting';
 
   // Update resources when loader data changes
   useEffect(() => {
@@ -299,50 +235,38 @@ export default function Dashboard() {
     };
   }, [loaderData.semesterCounts]);
 
-  // Handle upload response
-  useEffect(() => {
-    if (!uploadModalOpen) return;
+  const MAX_SIZE_BYTES = 10 * 1024 * 1024; // 10MB
+  const ALLOWED_TYPES = [
+    'application/pdf',
+    'application/msword',
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    'image/jpeg',
+    'image/png',
+  ];
 
-    const wasSubmitting = prevSubmittingRef.current;
-    const isNowSubmitting = navigation.state === 'submitting';
-    const isNowLoading = navigation.state === 'loading';
-    const isNowIdle = navigation.state === 'idle';
+  const isAllowedFileType = (file: File) => {
+    if (ALLOWED_TYPES.includes(file.type)) return true;
+    const name = file.name.toLowerCase();
+    return (
+      name.endsWith('.pdf') ||
+      name.endsWith('.doc') ||
+      name.endsWith('.docx') ||
+      name.endsWith('.jpg') ||
+      name.endsWith('.jpeg') ||
+      name.endsWith('.png')
+    );
+  };
 
-    // Clear message when starting new submission
-    if (isNowSubmitting) {
-      setUploadMessage(null);
-    }
-
-    // Handle success (redirect = loading state after submit means success)
-    if (wasSubmitting && isNowLoading) {
-      setUploadMessage({ type: 'success', text: 'Resource uploaded successfully!' });
-      setTimeout(() => {
-        setUploadModalOpen(false);
-        setSelectedFile(null);
-        setUploadMessage(null);
-        if (fileInputRef.current) fileInputRef.current.value = '';
-      }, 1500);
-      return;
-    }
-
-    // Handle response when idle (submission completed)
-    if (wasSubmitting && isNowIdle) {
-      if (actionData?.error) {
-        setUploadMessage({ type: 'error', text: actionData.error });
-      } else {
-        // No error = success
-        setUploadMessage({ type: 'success', text: 'Resource uploaded successfully!' });
-        setTimeout(() => {
-          setUploadModalOpen(false);
-          setSelectedFile(null);
-          setUploadMessage(null);
-          if (fileInputRef.current) fileInputRef.current.value = '';
-        }, 1500);
-      }
-    }
-
-    prevSubmittingRef.current = isNowSubmitting;
-  }, [navigation.state, actionData, uploadModalOpen]);
+  const getEffectiveContentType = (file: File) => {
+    if (ALLOWED_TYPES.includes(file.type)) return file.type;
+    const name = file.name.toLowerCase();
+    if (name.endsWith('.pdf')) return 'application/pdf';
+    if (name.endsWith('.doc')) return 'application/msword';
+    if (name.endsWith('.docx')) return 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+    if (name.endsWith('.jpg') || name.endsWith('.jpeg')) return 'image/jpeg';
+    if (name.endsWith('.png')) return 'image/png';
+    return file.type || 'application/octet-stream';
+  };
 
   const handleLoadMore = () => {
     if (!nextCursor || fetcher.state === 'submitting') return;
@@ -386,6 +310,130 @@ export default function Dashboard() {
       params.delete('type');
     }
     navigate(`?${params.toString()}`, { replace: true });
+  };
+
+  const handleUploadSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
+    if (!selectedFile) {
+      setUploadMessage({ type: 'error', text: 'Please select a file to upload.' });
+      return;
+    }
+
+    if (selectedFile.size > MAX_SIZE_BYTES) {
+      setUploadMessage({ type: 'error', text: 'File too large. Maximum size is 10MB.' });
+      return;
+    }
+
+    if (!isAllowedFileType(selectedFile)) {
+      setUploadMessage({ type: 'error', text: 'Invalid file type. Only PDF, DOCX, JPG, PNG allowed.' });
+      return;
+    }
+
+    const form = e.currentTarget;
+    const baseFormData = new FormData(form);
+
+    setIsUploading(true);
+    setUploadProgress(0);
+    setUploadPhase('prepare');
+    setUploadMessage(null);
+
+    try {
+      // 1) Request presigned upload URL
+      const prepareData = new FormData();
+      prepareData.append('intent', 'get-upload-url');
+      prepareData.append('fileName', selectedFile.name);
+      const contentType = getEffectiveContentType(selectedFile);
+      prepareData.append('fileType', contentType);
+      prepareData.append('fileSize', String(selectedFile.size));
+
+      const prepareResponse = await fetch('/api.r2-upload', {
+        method: 'POST',
+        body: prepareData,
+      });
+
+      const prepareJson = await prepareResponse.json();
+      if (!prepareResponse.ok || !prepareJson.ok) {
+        throw new Error(prepareJson?.error || 'Failed to prepare upload. Please try again.');
+      }
+
+      const uploadUrl: string = prepareJson.uploadUrl;
+      const fileKey: string = prepareJson.fileKey;
+
+      // 2) Upload directly to R2 with progress
+      setUploadPhase('upload');
+      await new Promise<void>((resolve, reject) => {
+        const xhr = new XMLHttpRequest();
+        xhr.open('PUT', uploadUrl);
+        xhr.setRequestHeader('Content-Type', getEffectiveContentType(selectedFile));
+
+        xhr.upload.onprogress = (event) => {
+          if (event.lengthComputable) {
+            const percent = Math.round((event.loaded / event.total) * 100);
+            setUploadProgress(percent);
+          }
+        };
+
+        xhr.onload = () => {
+          if (xhr.status >= 200 && xhr.status < 300) {
+            setUploadProgress(100);
+            resolve();
+          } else {
+            reject(new Error('Upload failed. Please try again.'));
+          }
+        };
+
+        xhr.onerror = () => reject(new Error('Network error during upload. Please try again.'));
+
+        xhr.send(selectedFile);
+      });
+
+      // 3) Confirm upload and create resource
+      setUploadPhase('confirm');
+      const confirmData = new FormData();
+      confirmData.append('intent', 'confirm-upload');
+      confirmData.append('fileKey', fileKey);
+      confirmData.append('fileSize', String(selectedFile.size));
+
+      const title = baseFormData.get('title');
+      const semester = baseFormData.get('semester');
+      const subject = baseFormData.get('subject');
+      const resource_type = baseFormData.get('resource_type');
+
+      if (title) confirmData.append('title', String(title));
+      if (semester) confirmData.append('semester', String(semester));
+      if (subject) confirmData.append('subject', String(subject));
+      if (resource_type) confirmData.append('resource_type', String(resource_type));
+
+      const confirmResponse = await fetch('/api.r2-upload', {
+        method: 'POST',
+        body: confirmData,
+      });
+
+      const confirmJson = await confirmResponse.json();
+      if (!confirmResponse.ok || !confirmJson.ok) {
+        throw new Error(confirmJson?.error || 'Failed to save resource. Please try again.');
+      }
+
+      setUploadMessage({ type: 'success', text: 'Resource uploaded successfully!' });
+
+      setTimeout(() => {
+        setUploadModalOpen(false);
+        setSelectedFile(null);
+        setUploadMessage(null);
+        setUploadProgress(0);
+        setUploadPhase('idle');
+        if (fileInputRef.current) fileInputRef.current.value = '';
+        navigate('.', { replace: true });
+      }, 1200);
+    } catch (error) {
+      console.error('Upload error:', error);
+      const message =
+        error instanceof Error ? error.message : 'Something went wrong during upload. Please try again.';
+      setUploadMessage({ type: 'error', text: message });
+    } finally {
+      setIsUploading(false);
+    }
   };
 
 
@@ -539,7 +587,7 @@ export default function Dashboard() {
               </div>
             )}
 
-            <Form method="post" encType="multipart/form-data" className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <Form method="post" encType="multipart/form-data" className="grid grid-cols-1 md:grid-cols-2 gap-6" onSubmit={handleUploadSubmit}>
               <div>
                 <label className="block text-sm font-semibold text-gray-900 dark:text-gray-100 mb-2">Semester</label>
                 <select name='semester' className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-600 rounded-lg focus:ring-2 focus:ring-[#d97757] focus:border-[#d97757] outline-none text-gray-900 dark:text-gray-100">
@@ -590,7 +638,7 @@ export default function Dashboard() {
                   ) : (
                     <>
                       <p className="text-sm text-gray-600 dark:text-gray-300 mb-1">Click to upload or drag and drop</p>
-                      <p className="text-xs text-gray-500 dark:text-gray-400">PDF, DOCX, JPG, PNG (Max 50MB)</p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">PDF, DOCX, JPG, PNG (Max 10MB)</p>
                     </>
                   )}
                   <input
@@ -604,9 +652,29 @@ export default function Dashboard() {
                 </div>
               </div>
 
+              {isUploading && (
+                <div className="md:col-span-2">
+                  <div className="w-full bg-gray-200 dark:bg-gray-600 rounded-full h-2 mb-2">
+                    <div
+                      className="bg-[#d97757] h-2 rounded-full transition-all"
+                      style={{ width: `${uploadProgress}%` }}
+                    />
+                  </div>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">
+                    {uploadPhase === 'prepare' && 'Preparing upload...'}
+                    {uploadPhase === 'upload' && `Uploading... ${uploadProgress}%`}
+                    {uploadPhase === 'confirm' && 'Saving resource...'}
+                  </p>
+                </div>
+              )}
+
               <div className="md:col-span-2">
-                <button type="submit" disabled={isSubmitting} className="w-full bg-[#d97757] text-white py-3 rounded-lg hover:bg-[#c66847] transition-all font-semibold disabled:opacity-50 disabled:cursor-not-allowed">
-                  {isSubmitting ? 'Uploading...' : 'Upload Resource'}
+                <button
+                  type="submit"
+                  disabled={isUploading}
+                  className="w-full bg-[#d97757] text-white py-3 rounded-lg hover:bg-[#c66847] transition-all font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {isUploading ? 'Uploading...' : 'Upload Resource'}
                 </button>
               </div>
             </Form>

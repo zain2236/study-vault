@@ -1,6 +1,7 @@
 import { unlink } from 'fs/promises';
 import { join } from 'path';
 import { existsSync } from 'fs';
+import { deleteObjectFromR2 } from '~/utils/r2/r2.server';
 
 /**
  * Deletes a file from the local storage
@@ -39,14 +40,25 @@ export async function deleteFileLocally(filePath: string): Promise<{
  */
 export async function deleteFileSafely(filePath: string): Promise<boolean> {
   try {
-    const fullPath = join(process.cwd(), 'public', filePath);
-
-    // Only attempt deletion if file exists
-    if (existsSync(fullPath)) {
-      await unlink(fullPath);
+    if (!filePath) {
+      return true;
     }
 
-    return true;
+    // Legacy local storage files (e.g. "/uploads/filename.pdf")
+    if (filePath.startsWith('/uploads/')) {
+      const fullPath = join(process.cwd(), 'public', filePath);
+
+      // Only attempt deletion if file exists
+      if (existsSync(fullPath)) {
+        await unlink(fullPath);
+      }
+
+      return true;
+    }
+
+    // R2-backed files use the raw key stored in file_path
+    const deleted = await deleteObjectFromR2(filePath);
+    return deleted;
   } catch (error) {
     // Log error but don't throw - file might already be deleted
     console.error('Error deleting file:', error);

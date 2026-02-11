@@ -11,6 +11,7 @@ import {
   fileExists,
   generateDownloadFileName
 } from '~/utils/download/download-helpers.server';
+import { objectExistsInR2, getObjectBufferFromR2 } from '~/utils/r2/r2.server';
 
 export async function loader({ params }: Route.LoaderArgs) {
   try {
@@ -29,11 +30,20 @@ export async function loader({ params }: Route.LoaderArgs) {
       return redirect('/resources?error=resource-not-found');
     }
 
+    const isLocalFile = resource.file_path.startsWith('/uploads/');
+
     // Check if file exists in storage BEFORE incrementing download count
-    if (!fileExists(resource.file_path)) {
-      // File doesn't exist in storage - redirect to resources page with error
-      // Don't increment download count since file doesn't exist
-      return redirect('/resources?error=file-not-found');
+    if (isLocalFile) {
+      if (!fileExists(resource.file_path)) {
+        // File doesn't exist in storage - redirect to resources page with error
+        // Don't increment download count since file doesn't exist
+        return redirect('/resources?error=file-not-found');
+      }
+    } else {
+      const existsInR2 = await objectExistsInR2(resource.file_path);
+      if (!existsInR2) {
+        return redirect('/resources?error=file-not-found');
+      }
     }
 
     // File exists, now increment download count
@@ -41,8 +51,19 @@ export async function loader({ params }: Route.LoaderArgs) {
 
     // Read and return file
     try {
-      const fullPath = getFullFilePath(updatedResource.file_path);
-      const fileBuffer = await readFile(fullPath);
+      let fileBuffer: Buffer;
+
+      if (isLocalFile) {
+        const fullPath = getFullFilePath(updatedResource.file_path);
+        fileBuffer = await readFile(fullPath);
+      } else {
+        const r2Buffer = await getObjectBufferFromR2(updatedResource.file_path);
+        if (!r2Buffer) {
+          return redirect('/resources?error=file-read-error');
+        }
+        fileBuffer = r2Buffer;
+      }
+
       const fileName = generateDownloadFileName(updatedResource.title, updatedResource.file_path);
 
       return new Response(fileBuffer, {
