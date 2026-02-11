@@ -8,8 +8,6 @@ import {
 
 import type { Route } from "./+types/root";
 import NotFoundPageComponent from "./routes/_404";
-import { ToastContainer } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
 import "./app.css";
 
 export const links: Route.LinksFunction = () => [
@@ -58,18 +56,6 @@ export function Layout({ children }: { children: React.ReactNode }) {
       </head>
       <body suppressHydrationWarning>
         {children}
-        <ToastContainer
-          position="top-right"
-          autoClose={3000}
-          hideProgressBar={false}
-          newestOnTop={false}
-          closeOnClick
-          rtl={false}
-          pauseOnFocusLoss
-          draggable
-          pauseOnHover
-          theme="light"
-        />
         <ScrollRestoration />
         <Scripts />
       </body>

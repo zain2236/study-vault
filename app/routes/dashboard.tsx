@@ -1,8 +1,7 @@
 import type { Route } from './+types/dashboard';
 import { redirect, Form, useActionData, useNavigation, useLoaderData, useFetcher, useSearchParams, useNavigate } from 'react-router';
-import { useState, useRef, useEffect, useCallback } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Upload, X, Plus, Filter, Loader2 } from 'lucide-react';
-import { dashboardUploadToast } from '~/components/toast-components/dashboard-upload-toast';
 
 import { ResourceCard } from '~/components/dashboard-components/ResourceCard';
 import { getUserId } from '~/utils/cookie-session/session.server';
@@ -55,21 +54,12 @@ export async function loader({ request }: Route.LoaderArgs) {
       error: null
     }
   } catch (error) {
-    // Check if it's a database connection error
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    const isDatabaseError = errorMessage.includes('connect') || 
-                           errorMessage.includes('timeout') || 
-                           errorMessage.includes('ECONNREFUSED') ||
-                           errorMessage.includes('Prisma');
-
     return {
       resources: [],
       nextCursor: null,
       hasMore: false,
       semesterCounts: {},
-      error: isDatabaseError 
-        ? 'Database connection failed. Please check your connection and try again.'
-        : 'Failed to load resources. Please try again later.'
+      error: 'Service is down. Please try again.'
     }
   }
 }
@@ -106,16 +96,9 @@ export async function action({ request }: Route.ActionArgs) {
           success: true
         };
       } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-        const isDatabaseError = errorMessage.includes('connect') || 
-                              errorMessage.includes('timeout') || 
-                              errorMessage.includes('ECONNREFUSED');
-        
-        return { 
+        return {
           success: false,
-          error: isDatabaseError 
-            ? 'Database connection failed. Please try again.'
-            : 'Failed to load more resources. Please try again.'
+          error: 'Service is down. Please try again.'
         };
       }
     }
@@ -132,15 +115,8 @@ export async function action({ request }: Route.ActionArgs) {
         await updateResourcePublishStatus(Number(resourceId), intent === 'publish')
         return { success: true }
       } catch (dbError) {
-        const errorMessage = dbError instanceof Error ? dbError.message : 'Unknown error';
-        const isDatabaseError = errorMessage.includes('connect') || 
-                              errorMessage.includes('timeout') || 
-                              errorMessage.includes('ECONNREFUSED');
-        
-        return { 
-          error: isDatabaseError 
-            ? 'Database connection failed. Please try again.'
-            : 'Failed to update resource status. Please try again.'
+        return {
+          error: 'Service is down. Please try again.'
         };
       }
     }
@@ -166,15 +142,14 @@ export async function action({ request }: Route.ActionArgs) {
         // File exists, increment download count and return success
         const { incrementResourceDownload } = await import('~/utils/prisma/resource-prisma.server');
         await incrementResourceDownload(Number(resourceId));
-        
+
         // Return download URL for client to handle
-        return { 
-          success: true, 
-          downloadUrl: `/download/${resourceId}` 
+        return {
+          success: true,
+          downloadUrl: `/download/${resourceId}`
         };
       } catch (error) {
-        console.error('Download error:', error);
-        return { error: 'Failed to process download. Please try again.' };
+        return { error: 'Service is down. Please try again.' };
       }
     }
 
@@ -187,25 +162,15 @@ export async function action({ request }: Route.ActionArgs) {
       if (!resource) return { error: 'Resource not found' }
 
       // Try to delete file from storage (non-blocking)
-      const fileDeleted = await deleteFileSafely(resource.file_path)
-      if (!fileDeleted) {
-        console.warn(`Failed to delete file ${resource.file_path} from storage, but continuing with database deletion`);
-      }
+      await deleteFileSafely(resource.file_path)
 
       // Delete from database (always attempt, even if file deletion failed)
       try {
         await deleteResource(Number(resourceId))
         return { success: true }
       } catch (dbError) {
-        const errorMessage = dbError instanceof Error ? dbError.message : 'Unknown error';
-        const isDatabaseError = errorMessage.includes('connect') || 
-                              errorMessage.includes('timeout') || 
-                              errorMessage.includes('ECONNREFUSED');
-        
-        return { 
-          error: isDatabaseError 
-            ? 'Database connection failed. Resource may still exist. Please try again.'
-            : 'Failed to delete resource. Please try again.'
+        return {
+          error: 'Service is down. Please try again.'
         };
       }
     }
@@ -231,14 +196,14 @@ export async function action({ request }: Route.ActionArgs) {
     // Save file to local storage with error handling
     let filePath: string;
     let fileSize: number;
-    
+
     try {
       const fileResult = await saveFileLocally(file as File);
       filePath = fileResult.filePath;
       fileSize = fileResult.fileSize;
     } catch (storageError) {
       const { getStorageErrorMessage } = await import('~/utils/storage/storage-error-handler.server');
-      return { 
+      return {
         error: getStorageErrorMessage(storageError)
       };
     }
@@ -261,19 +226,11 @@ export async function action({ request }: Route.ActionArgs) {
         const { deleteFileSafely } = await import('~/utils/delete-file/file-delete.server');
         await deleteFileSafely(filePath);
       } catch (cleanupError) {
-        console.error('Failed to cleanup file after database error:', cleanupError);
+        // Silently handle cleanup error
       }
-      
-      const errorMessage = dbError instanceof Error ? dbError.message : 'Unknown database error';
-      const isDatabaseError = errorMessage.includes('connect') || 
-                              errorMessage.includes('timeout') || 
-                              errorMessage.includes('ECONNREFUSED') ||
-                              errorMessage.includes('Prisma');
-      
-      return { 
-        error: isDatabaseError 
-          ? 'Database connection failed. File was not saved. Please try again.'
-          : 'Failed to create resource. Please try again.'
+
+      return {
+        error: 'Service is down. Please try again.'
       };
     }
 
@@ -283,19 +240,16 @@ export async function action({ request }: Route.ActionArgs) {
         const { deleteFileSafely } = await import('~/utils/delete-file/file-delete.server');
         await deleteFileSafely(filePath);
       } catch (cleanupError) {
-        console.error('Failed to cleanup file after resource creation failure:', cleanupError);
+        // Silently handle cleanup error
       }
-      return ({ error: 'Failed to create resource. Please try again.' });
+      return ({ error: 'Service is down. Please try again.' });
     }
-    
+
     return redirect('/user/dashboard')
   } catch (error) {
-    const { getStorageErrorMessage, isStorageError } = await import('~/utils/storage/storage-error-handler.server');
-    return ({ 
-      error: isStorageError(error)
-        ? getStorageErrorMessage(error)
-        : 'Failed to process request. Please try again.'
-    })
+    return {
+      error: 'Service is down. Please try again.'
+    }
   }
 }
 
@@ -307,20 +261,17 @@ export default function Dashboard() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
 
-  // Initialize state
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [uploadModalOpen, setUploadModalOpen] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const prevNavigationState = useRef<string>(navigation.state);
-  const isSubmitting = navigation.state === 'submitting';
-
-  // Get resource type from URL
-  const resourceType = searchParams.get('type') || null;
-
-  // Initialize state for resources
+  const [uploadMessage, setUploadMessage] = useState<{ type: 'error' | 'success'; text: string } | null>(null);
+  const prevSubmittingRef = useRef(false);
   const [allResources, setAllResources] = useState(loaderData.resources);
-  const [nextCursor, setNextCursor] = useState<string | null>(loaderData.nextCursor);
+  const [nextCursor, setNextCursor] = useState(loaderData.nextCursor);
   const [hasMore, setHasMore] = useState(loaderData.hasMore);
+
+  const resourceType = searchParams.get('type') || null;
+  const isSubmitting = navigation.state === 'submitting';
 
   // Update resources when loader data changes
   useEffect(() => {
@@ -336,85 +287,98 @@ export default function Dashboard() {
       setAllResources(prev => [...prev, ...data.resources]);
       setNextCursor(data.nextCursor);
       setHasMore(data.hasMore);
-    } else if (data?.success === false && data?.error) {
-      // Handle load-more errors
-      console.error('Failed to load more resources:', data.error);
     }
   }, [fetcher.data]);
 
-  // Expose semester counts to layout via window and custom event
+  // Expose semester counts to layout
   useEffect(() => {
     (window as any).dashboardSemesterCounts = loaderData.semesterCounts;
-    // Dispatch custom event to notify layout of update
     window.dispatchEvent(new CustomEvent('dashboardCountsUpdated'));
     return () => {
       delete (window as any).dashboardSemesterCounts;
     };
   }, [loaderData.semesterCounts]);
 
-  // Handle load more
-  const handleLoadMore = useCallback(() => {
+  // Handle upload response
+  useEffect(() => {
+    if (!uploadModalOpen) return;
+
+    const wasSubmitting = prevSubmittingRef.current;
+    const isNowSubmitting = navigation.state === 'submitting';
+    const isNowLoading = navigation.state === 'loading';
+    const isNowIdle = navigation.state === 'idle';
+
+    // Clear message when starting new submission
+    if (isNowSubmitting) {
+      setUploadMessage(null);
+    }
+
+    // Handle success (redirect = loading state after submit means success)
+    if (wasSubmitting && isNowLoading) {
+      setUploadMessage({ type: 'success', text: 'Resource uploaded successfully!' });
+      setTimeout(() => {
+        setUploadModalOpen(false);
+        setSelectedFile(null);
+        setUploadMessage(null);
+        if (fileInputRef.current) fileInputRef.current.value = '';
+      }, 1500);
+      return;
+    }
+
+    // Handle response when idle (submission completed)
+    if (wasSubmitting && isNowIdle) {
+      if (actionData?.error) {
+        setUploadMessage({ type: 'error', text: actionData.error });
+      } else {
+        // No error = success
+        setUploadMessage({ type: 'success', text: 'Resource uploaded successfully!' });
+        setTimeout(() => {
+          setUploadModalOpen(false);
+          setSelectedFile(null);
+          setUploadMessage(null);
+          if (fileInputRef.current) fileInputRef.current.value = '';
+        }, 1500);
+      }
+    }
+
+    prevSubmittingRef.current = isNowSubmitting;
+  }, [navigation.state, actionData, uploadModalOpen]);
+
+  const handleLoadMore = () => {
     if (!nextCursor || fetcher.state === 'submitting') return;
-    
+
     const formData = new FormData();
     formData.append('intent', 'load-more');
     formData.append('cursor', nextCursor);
-    
+
     const searchQuery = searchParams.get('search');
     const semester = searchParams.get('semester');
     const type = searchParams.get('type');
-    
+
     if (searchQuery) formData.append('search', searchQuery);
     if (semester) formData.append('semester', semester);
     if (type && type !== 'all') formData.append('type', type);
-    
+
     fetcher.submit(formData, { method: 'POST' });
-  }, [nextCursor, searchParams, fetcher.state, fetcher]);
+  };
 
-  // Handle upload response and close modal
-  useEffect(() => {
-    const wasSubmitting = prevNavigationState.current === 'submitting';
-    const isNowIdle = navigation.state === 'idle';
-    const isNowLoading = navigation.state === 'loading';
-    
-    if (wasSubmitting && (isNowIdle || isNowLoading) && uploadModalOpen) {
-      if (actionData?.error) {
-        dashboardUploadToast.error(actionData.error);
-      } else if (!actionData?.error) {
-        dashboardUploadToast.success();
-        setUploadModalOpen(false);
-        setSelectedFile(null);
-        if (fileInputRef.current) fileInputRef.current.value = '';
-      }
-    }
-    prevNavigationState.current = navigation.state;
-  }, [navigation.state, actionData, uploadModalOpen]);
-
-  const handleFileSelect = useCallback((file: File | null) => {
+  const handleFileSelect = (file: File | null) => {
     setSelectedFile(file);
     if (file && fileInputRef.current) {
       const dataTransfer = new DataTransfer();
       dataTransfer.items.add(file);
       fileInputRef.current.files = dataTransfer.files;
     }
-  }, []);
+  };
 
-  // Handle drag and drop
-  const handleDragDrop = useCallback((e: React.DragEvent<HTMLDivElement>) => {
+  const handleDragDrop = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     e.stopPropagation();
     const file = e.dataTransfer.files?.[0];
-    if (file) {
-      try {
-        handleFileSelect(file);
-      } catch (error) {
-        console.error('Error handling dropped file:', error);
-      }
-    }
-  }, [handleFileSelect]);
+    if (file) handleFileSelect(file);
+  };
 
-  // Handle resource type change
-  const handleResourceTypeChange = useCallback((type: string | null) => {
+  const handleResourceTypeChange = (type: string | null) => {
     const params = new URLSearchParams(searchParams);
     if (type && type !== 'all') {
       params.set('type', type);
@@ -422,7 +386,7 @@ export default function Dashboard() {
       params.delete('type');
     }
     navigate(`?${params.toString()}`, { replace: true });
-  }, [searchParams, navigate]);
+  };
 
 
   const semesterOptions = [1, 2, 3, 4, 5, 6, 7, 8];
@@ -463,14 +427,14 @@ export default function Dashboard() {
           <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-2">Unable to Load Resources</h3>
           <p className="text-gray-600 dark:text-gray-300 mb-6 max-w-md mx-auto">{loaderData.error}</p>
           <div className="flex gap-3 justify-center">
-            <button 
-              onClick={() => window.location.reload()} 
+            <button
+              onClick={() => window.location.reload()}
               className="bg-[#d97757] text-white px-6 py-3 rounded-lg hover:bg-[#c66847] transition-all font-medium"
             >
               Retry
             </button>
-            <button 
-              onClick={() => navigate('/user/dashboard')} 
+            <button
+              onClick={() => navigate('/user/dashboard')}
               className="bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-300 px-6 py-3 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-500 transition-all font-medium"
             >
               Refresh Page
@@ -487,11 +451,10 @@ export default function Dashboard() {
                 <button
                   key={option.label}
                   onClick={() => handleResourceTypeChange(option.value)}
-                  className={`flex items-center space-x-2 px-4 py-2 rounded-lg border transition-colors text-sm font-medium ${
-                    isActive
+                  className={`flex items-center space-x-2 px-4 py-2 rounded-lg border transition-colors text-sm font-medium ${isActive
                       ? 'bg-[#d97757]/15 dark:bg-[#d97757]/25 text-[#d97757] dark:text-[#c66847] border-[#d97757]/30 dark:border-[#d97757]/40'
                       : 'bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 hover:border-[#d97757]/50 hover:text-[#d97757] text-gray-900 dark:text-gray-100'
-                  }`}
+                    }`}
                 >
                   {Icon && <Icon className="w-4 h-4" />}
                   <span>{option.label}</span>
@@ -515,7 +478,7 @@ export default function Dashboard() {
                   {resourceType ? `No ${resourceType} Found` : 'No Resources Yet'}
                 </h3>
                 <p className="text-gray-600 dark:text-gray-300 mb-6 max-w-md mx-auto">
-                  {resourceType 
+                  {resourceType
                     ? `No resources match your current filter. Try selecting a different filter or upload a new ${resourceType.toLowerCase()} resource.`
                     : 'You haven\'t uploaded any resources yet. Start sharing your study materials with your classmates!'}
                 </p>
@@ -561,11 +524,20 @@ export default function Dashboard() {
           <div className="bg-white dark:bg-gray-700 rounded-2xl shadow-2xl max-w-2xl w-full p-8" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Upload Resource</h3>
-              <button onClick={() => setUploadModalOpen(false)} className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200">
+              <button onClick={() => { setUploadModalOpen(false); setUploadMessage(null); }} className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200">
                 <X className="w-6 h-6" />
               </button>
             </div>
 
+            {/* Error/Success Message */}
+            {uploadMessage && (
+              <div className={`mb-4 p-3 rounded-lg ${uploadMessage.type === 'error'
+                  ? 'bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400'
+                  : 'bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 text-green-600 dark:text-green-400'
+                }`}>
+                <p className="text-sm font-medium">{uploadMessage.text}</p>
+              </div>
+            )}
 
             <Form method="post" encType="multipart/form-data" className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
@@ -621,13 +593,13 @@ export default function Dashboard() {
                       <p className="text-xs text-gray-500 dark:text-gray-400">PDF, DOCX, JPG, PNG (Max 50MB)</p>
                     </>
                   )}
-                  <input 
-                    ref={fileInputRef} 
-                    type="file" 
-                    name='file' 
-                    accept='.pdf,.docx,.jpg,.png' 
-                    onChange={(e) => handleFileSelect(e.target.files?.[0] || null)} 
-                    className="hidden" 
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    name='file'
+                    accept='.pdf,.docx,.jpg,.png'
+                    onChange={(e) => handleFileSelect(e.target.files?.[0] || null)}
+                    className="hidden"
                   />
                 </div>
               </div>

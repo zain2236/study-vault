@@ -1,8 +1,7 @@
 import type { Route } from './+types/sign-up';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Form, Link, useNavigation, useActionData, redirect } from 'react-router';
 import { Mail, Lock, User, ArrowRight, Eye, EyeOff } from 'lucide-react';
-import { authSignupToast } from '~/components/toast-components/auth-signup-toast';
 
 import prisma from '../../utils/prisma.server';
 import { hashPassword } from '../../utils/password/password.server';
@@ -63,17 +62,17 @@ export default function SignUpPage() {
   const navigation = useNavigation();
   const isSubmitting = navigation.state === 'submitting';
 
-  // Handle error messages with toast
-  useEffect(() => {
-    if (actionData?.error) {
-      authSignupToast.error(actionData.error);
-    }
-  }, [actionData]);
-
   return (
     <Form
       method="post"
       className="space-y-5">
+          {/* Error Message */}
+          {actionData?.error && (
+            <div className="mb-4 p-3 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800">
+              <p className="text-sm font-medium text-red-600 dark:text-red-400">{actionData.error}</p>
+            </div>
+          )}
+
           {/* Logo & Header inside card */}
           <div className="text-center mb-4">
             <div className="flex justify-center mb-2">

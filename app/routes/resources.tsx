@@ -1,6 +1,5 @@
 import { useState, useMemo, useCallback, useEffect } from 'react';
 import { useLoaderData, useFetcher, useSearchParams } from 'react-router';
-import { resourcesDownloadToast } from '~/components/toast-components/resources-download-toast';
 
 import { BrowseResourceCard } from '~/components/resources-page-components/BrowseResourceCard';
 import { PageHeader } from '~/components/resources-page-components/PageHeader';
@@ -106,10 +105,9 @@ export default function BrowseResourcesPage() {
     'download-failed': 'Download failed. Please try again later.'
   };
 
-  // Show toast and clear error from URL
+  // Clear error from URL after showing
   useEffect(() => {
     if (errorParam && errorMessages[errorParam]) {
-      resourcesDownloadToast.error(errorMessages[errorParam]);
       const params = new URLSearchParams(searchParams);
       params.delete('error');
       setSearchParams(params, { replace: true });
@@ -219,6 +217,12 @@ export default function BrowseResourcesPage() {
       <div className="fixed bottom-20 left-10 w-96 h-96 bg-[#d97757] opacity-5 dark:opacity-10 rounded-full blur-3xl pointer-events-none"></div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        {/* Error Message */}
+        {errorParam && errorMessages[errorParam] && (
+          <div className="mb-4 p-3 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800">
+            <p className="text-sm font-medium text-red-600 dark:text-red-400">{errorMessages[errorParam]}</p>
+          </div>
+        )}
         <PageHeader
           resourceCount={loaderData.totalCount}
           filters={filters}

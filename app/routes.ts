@@ -26,9 +26,6 @@ export default [
     // Download route (no layout needed) - resource route for file downloads
     route("download/:id", "routes/download.$id.tsx"),
 
-    // Static pages Route
-    route('terms-of-service' , 'routes/terms-of-service.tsx') , 
-    route('privacy-policy' , 'routes/privacy-policy.tsx') , 
 
     route("*", "routes/_404.tsx"),
 ] satisfies RouteConfig;

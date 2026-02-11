@@ -1,8 +1,7 @@
 import type { Route } from './+types/login';
 import { Form, Link, redirect, useActionData, useNavigation } from 'react-router';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Mail, Lock, ArrowRight, Eye, EyeOff, Loader2 } from 'lucide-react';
-import { authLoginToast } from '~/components/toast-components/auth-login-toast';
 
 import { createLoginSession, getUserId } from '../../utils/cookie-session/session.server';
 import prisma from '../../utils/prisma.server';
@@ -56,15 +55,15 @@ export default function LoginPage() {
   const isSubmitting = navigation.state === 'submitting';
   const [showPassword, setShowPassword] = useState(false);
 
-  // Handle error messages with toast
-  useEffect(() => {
-    if (actionData?.error) {
-      authLoginToast.error(actionData.error);
-    }
-  }, [actionData]);
-
   return (
     <Form method="post" className="space-y-5">
+      {/* Error Message */}
+      {actionData?.error && (
+        <div className="mb-4 p-3 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800">
+          <p className="text-sm font-medium text-red-600 dark:text-red-400">{actionData.error}</p>
+        </div>
+      )}
+
       {/* Logo & Header inside card */}
       <div className="text-center mb-6">
         <div className="flex justify-center mb-2">
