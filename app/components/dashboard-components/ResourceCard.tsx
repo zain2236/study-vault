@@ -101,7 +101,15 @@ export const ResourceCard = memo(function ResourceCard({ resource }: ResourceCar
     downloadFetcher,
     (data: { downloadUrl?: string }) => {
       if (data.downloadUrl) {
-        window.location.href = data.downloadUrl;
+        // Trigger download without full page navigation
+        const link = document.createElement('a');
+        link.href = data.downloadUrl;
+        link.download = '';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+
+        // Refresh dashboard data (e.g., download count) after a short delay
         setTimeout(() => revalidator.revalidate(), 1000);
       }
     },

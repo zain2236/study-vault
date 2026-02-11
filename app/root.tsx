@@ -4,6 +4,8 @@ import {
   Outlet,
   Scripts,
   ScrollRestoration,
+  useRouteError,
+  isRouteErrorResponse,
 } from "react-router";
 
 import type { Route } from "./+types/root";
@@ -69,31 +71,45 @@ export default function App() {
 export function NotFoundPage() {
   return <NotFoundPageComponent />;
 }
-// export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
-//   let message = "Oops!";
-//   let details = "An unexpected error occurred.";
-//   let stack: string | undefined;
+export function ErrorBoundary() {
+  const error = useRouteError();
 
-//   if (isRouteErrorResponse(error)) {
-//     message = error.status === 404 ? "404" : "Error";
-//     details =
-//       error.status === 404
-//         ? "The requested page could not be found."
-//         : error.statusText || details;
-//   } else if (import.meta.env.DEV && error && error instanceof Error) {
-//     details = error.message;
-//     stack = error.stack;
-//   }
+  let title = "Something went wrong";
+  let message = "An unexpected error occurred. Please try again.";
+  let status = 500;
 
-//   return (
-//     <main className="pt-16 p-4 container mx-auto">
-//       <h1>{message}</h1>
-//       <p>{details}</p>
-//       {stack && (
-//         <pre className="w-full p-4 overflow-x-auto">
-//           <code>{stack}</code>
-//         </pre>
-//       )}
-//     </main>
-//   );
-// }
+  if (isRouteErrorResponse(error)) {
+    status = error.status;
+    if (status === 404) {
+      title = "Page not found";
+      message = "The page you’re looking for doesn’t exist.";
+    } else {
+      title = error.statusText || title;
+      message = (error.data as any)?.message || message;
+    }
+  } else if (error instanceof Error && import.meta.env.DEV) {
+    message = error.message;
+  }
+
+  return (
+    <main className="min-h-screen bg-[#f5f5f0] dark:bg-gray-900 flex items-center justify-center px-4">
+      <div className="max-w-lg w-full bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8 space-y-4">
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+          {status !== 500 ? `${status} – ${title}` : title}
+        </h1>
+        <p className="text-gray-700 dark:text-gray-300 text-sm">{message}</p>
+        {error instanceof Error && import.meta.env.DEV && (
+          <details className="mt-4 text-xs text-gray-500 dark:text-gray-400 whitespace-pre-wrap">
+            {error.stack}
+          </details>
+        )}
+        <a
+          href="/"
+          className="inline-flex mt-4 px-4 py-2 rounded-lg bg-[#d97757] text-white text-sm font-semibold hover:bg-[#c66847] transition-colors"
+        >
+          Go back home
+        </a>
+      </div>
+    </main>
+  );
+}

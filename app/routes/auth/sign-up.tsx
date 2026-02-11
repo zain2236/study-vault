@@ -6,58 +6,73 @@ import { Mail, Lock, User, ArrowRight, Eye, EyeOff } from 'lucide-react';
 import prisma from '../../utils/prisma.server';
 import { hashPassword } from '../../utils/password/password.server';
 import { createLoginSession, getUserId } from '~/utils/cookie-session/session.server';
+import { validateEmail, validatePasswordLength } from '~/utils/validation/auth-validation.server';
+
+type ActionData = {
+  error?: string;
+};
 
 // Check if user is already logged in ?
 export async function loader({ request }: Route.LoaderArgs) {
-  const userId = await getUserId(request)
+  const userId = await getUserId(request);
   if (userId) {
-    return redirect('/user/dashboard')
+    return redirect('/user/dashboard');
   }
-  return null
+  return null;
 }
 
 export async function action({ request }: Route.ActionArgs) {
-  const formData = await request.formData()
-  const user_name = formData.get('username')
-  const email = formData.get('email')
-  const password = formData.get('password')
+  const formData = await request.formData();
+  const rawUsername = formData.get('username');
+  const rawEmail = formData.get('email');
+  const rawPassword = formData.get('password');
+
+  const user_name = typeof rawUsername === 'string' ? rawUsername.trim() : '';
+  const email = typeof rawEmail === 'string' ? rawEmail.trim().toLowerCase() : '';
+  const password = typeof rawPassword === 'string' ? rawPassword : '';
 
   if (!user_name) {
-    return { error: 'Username is required' };
+    return { error: 'Username is required' } satisfies ActionData;
   }
-  if (!email) {
-    return { error: 'Email is required' };
+
+  const emailError = validateEmail(email);
+  if (emailError) {
+    return { error: emailError } satisfies ActionData;
   }
-  if (!password) {
-    return { error: 'Password is required' };
+
+  const passwordError = validatePasswordLength(password, 8);
+  if (passwordError) {
+    return { error: passwordError } satisfies ActionData;
   }
 
   try {
+    // Check if email already exists
+    const existingEmail = await prisma.user.findUnique({ where: { email } });
+    if (existingEmail) {
+      return { error: 'An account with this email already exists' } satisfies ActionData;
+    }
 
     // Hash the password
-    const hashedPassword = await hashPassword(password as string);
+    const hashedPassword = await hashPassword(password);
 
-    // Check if email already exists
-    const existingEmail = await prisma.user.findUnique({ where: { email: email as string } });
-    if (existingEmail) {
-      return { error: 'Email already exists' };
-    }
     // Create user in database
     const user = await prisma.user.create({
-      data: { user_name: user_name as string, email: email as string, password: hashedPassword as string },
+      data: { user_name, email, password: hashedPassword },
     });
 
     if (!user) {
-      return { error: 'Failed to create user' };
+      return { error: 'Failed to create user' } satisfies ActionData;
     }
+
     // Create session for user 
-    return await createLoginSession(user.id, "/user/dashboard");
+    return await createLoginSession(user.id, '/user/dashboard');
   } catch (error) {
-    return { error: 'Failed to create user' };
+    return { error: 'Failed to create user. Please try again.' } satisfies ActionData;
   }
 }
+
 export default function SignUpPage() {
-  const actionData = useActionData<typeof action>();
+  const actionData = useActionData<ActionData>();
   const [showPassword, setShowPassword] = useState(false);
   const navigation = useNavigation();
   const isSubmitting = navigation.state === 'submitting';
@@ -144,7 +159,7 @@ export default function SignUpPage() {
                 type={showPassword ? "text" : "password"}
                 placeholder="Create a strong password"
                 required
-                minLength={6}
+                minLength={8}
                 className="block w-full pl-12 pr-12 py-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-600 rounded-lg focus:ring-2 focus:ring-[#d97757] focus:border-[#d97757] transition-all outline-none text-gray-900 dark:text-gray-100 placeholder-gray-400/80 dark:placeholder-gray-400 hover:border-gray-400 dark:hover:border-gray-500"
               />
               <button

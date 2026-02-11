@@ -77,6 +77,7 @@ export async function action({ request }: Route.ActionArgs) {
       );
     }
 
+    // Create a new folder named user-${userId} and a key for the uploaded file
     const safeName = sanitizeFileName(fileName);
     const key = `user-${userId}/${Date.now()}-${safeName}`;
 
