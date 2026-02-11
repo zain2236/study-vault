@@ -2,9 +2,6 @@ import { File, FileText, MoreVertical, BookOpen, Calendar, Download, Trash2, Glo
 import { memo, useState, useCallback, useMemo, useEffect, useRef } from 'react';
 import { useRevalidator, useFetcher } from 'react-router';
 import { getRelativeTime } from '~/utils/handle-time/relative-time';
-import { dashboardDownloadToast } from '~/components/toast-components/dashboard-download-toast';
-import { dashboardDeleteToast } from '~/components/toast-components/dashboard-delete-toast';
-import { dashboardPublishToast } from '~/components/toast-components/dashboard-publish-toast';
 import { DeleteConfirmModal } from '~/components/ui-components';
 
 interface Resource {
@@ -79,6 +76,7 @@ export const ResourceCard = memo(function ResourceCard({ resource }: ResourceCar
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [relativeTime, setRelativeTime] = useState('');
+  const [message, setMessage] = useState<{ type: 'error' | 'success'; text: string } | null>(null);
   
   const lastPublishIntentRef = useRef<'publish' | 'unpublish' | null>(null);
 
@@ -103,12 +101,14 @@ export const ResourceCard = memo(function ResourceCard({ resource }: ResourceCar
     downloadFetcher,
     (data: { downloadUrl?: string }) => {
       if (data.downloadUrl) {
-        dashboardDownloadToast.success();
         window.location.href = data.downloadUrl;
         setTimeout(() => revalidator.revalidate(), 1000);
       }
     },
-    (error) => dashboardDownloadToast.error(error)
+    (error) => {
+      setMessage({ type: 'error', text: error });
+      setTimeout(() => setMessage(null), 3000);
+    }
   );
 
   // Handle publish/unpublish
@@ -127,15 +127,17 @@ export const ResourceCard = memo(function ResourceCard({ resource }: ResourceCar
     publishFetcher,
     () => {
       if (lastPublishIntentRef.current === 'publish') {
-        dashboardPublishToast.publishSuccess(resource.title);
+        setMessage({ type: 'success', text: `${resource.title} published successfully!` });
       } else {
-        dashboardPublishToast.unpublishSuccess(resource.title);
+        setMessage({ type: 'success', text: `${resource.title} unpublished successfully!` });
       }
+      setTimeout(() => setMessage(null), 3000);
       lastPublishIntentRef.current = null;
       revalidator.revalidate();
     },
     (error) => {
-      dashboardPublishToast.error(error);
+      setMessage({ type: 'error', text: error });
+      setTimeout(() => setMessage(null), 3000);
       lastPublishIntentRef.current = null;
     }
   );
@@ -159,12 +161,14 @@ export const ResourceCard = memo(function ResourceCard({ resource }: ResourceCar
   useFetcherToast(
     deleteFetcher,
     () => {
-      dashboardDeleteToast.success(resource.title);
+      setMessage({ type: 'success', text: `${resource.title} deleted successfully!` });
+      setTimeout(() => setMessage(null), 3000);
       revalidator.revalidate();
     },
     (error) => {
       setIsDeleting(false);
-      dashboardDeleteToast.error(error);
+      setMessage({ type: 'error', text: error });
+      setTimeout(() => setMessage(null), 3000);
     }
   );
 
@@ -185,6 +189,15 @@ export const ResourceCard = memo(function ResourceCard({ resource }: ResourceCar
 
   return (
     <>
+      {message && (
+        <div className={`fixed top-4 right-4 z-50 p-3 rounded-lg ${
+          message.type === 'error' 
+            ? 'bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400' 
+            : 'bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 text-green-600 dark:text-green-400'
+        }`}>
+          <p className="text-sm font-medium">{message.text}</p>
+        </div>
+      )}
       <article className="bg-white dark:bg-gray-800 rounded-xl shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-200 border border-gray-200 dark:border-gray-700 overflow-hidden">
         <header className="bg-[#d97757]/10 dark:bg-[#d97757]/20 p-5">
           <div className="flex items-start justify-between">

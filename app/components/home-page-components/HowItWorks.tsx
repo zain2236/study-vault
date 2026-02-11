@@ -34,7 +34,7 @@ export function HowItWorks() {
           <div className="grid lg:grid-cols-3 gap-8">
             {cards.map((item, idx) => (
               <div key={idx} className="relative">
-                <div className="bg-white dark:bg-gray-700 p-8 rounded-xl shadow-lg dark:shadow-gray-900/50 hover:shadow-2xl dark:hover:shadow-gray-900/70 transition-all border border-transparent dark:border-gray-600/50">
+                <div className="bg-white dark:bg-gray-700 p-8 rounded-xl shadow-sm dark:shadow-gray-900/50 hover:shadow-lg dark:hover:shadow-gray-900/70 transition-all border border-transparent dark:border-gray-600/50">
                   <div className="text-6xl font-bold text-[#d97757] opacity-20 dark:opacity-30 mb-4">{item.step}</div>
                   <h3 className="text-2xl font-bold text-gray-900 dark:text-gray-50 mb-4">{item.title}</h3>
                   <p className="text-gray-600 dark:text-gray-200 leading-relaxed">{item.description}</p>
