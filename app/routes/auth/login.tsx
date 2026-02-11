@@ -6,51 +6,61 @@ import { Mail, Lock, ArrowRight, Eye, EyeOff, Loader2 } from 'lucide-react';
 import { createLoginSession, getUserId } from '../../utils/cookie-session/session.server';
 import prisma from '../../utils/prisma.server';
 import { verifyPassword } from '~/utils/password/password.server';
+import { validateEmail, validatePasswordLength } from '~/utils/validation/auth-validation.server';
 
+type ActionData = {
+  error?: string;
+};
 
 export async function loader({ request }: Route.LoaderArgs) {
-  const userId = await getUserId(request)
+  const userId = await getUserId(request);
 
   if (userId) {
-    return redirect('/user/dashboard')
+    return redirect('/user/dashboard');
   }
 
-  return null
+  return null;
 }
 
 export async function action({ request }: Route.ActionArgs) {
   const form = await request.formData();
-  const email = form.get('email');
-  const password = form.get('password');
+  const rawEmail = form.get('email');
+  const rawPassword = form.get('password');
+
+  const email = typeof rawEmail === 'string' ? rawEmail.trim().toLowerCase() : '';
+  const password = typeof rawPassword === 'string' ? rawPassword : '';
 
   try {
-    if (!email) {
-      return ({ error: "Email is Required" });
+    const emailError = validateEmail(email);
+    if (emailError) {
+      return { error: emailError } satisfies ActionData;
     }
-    if (!password) {
-      return ({ error: "Password is Required" });
-    }
-    const user = await prisma.user.findUnique({ where: { email: email as string } });
 
-    // Check User and Credientails
+    const passwordError = validatePasswordLength(password, 8);
+    if (passwordError) {
+      return { error: passwordError } satisfies ActionData;
+    }
+
+    const user = await prisma.user.findUnique({ where: { email } });
+
+    // Check user and credentials (generic error to avoid leaking which field is wrong)
     if (!user) {
-      return { error: "Invalid credientails " }
+      return { error: 'Invalid email or password' } satisfies ActionData;
     }
-    
-    // Verify Password
-    const verifiedPassword = await verifyPassword(password as string, user.password as string);
-    if (!verifiedPassword) {
-      return { error: 'Invalid password' };
-    }
-    return await createLoginSession(user.id, "/user/dashboard");
-  } catch (error) {
-    return ({ error: "Failed to login" });
-  }
 
+    const verifiedPassword = await verifyPassword(password, user.password as string);
+    if (!verifiedPassword) {
+      return { error: 'Invalid email or password' } satisfies ActionData;
+    }
+
+    return await createLoginSession(user.id, '/user/dashboard');
+  } catch (error) {
+    return { error: 'Failed to login. Please try again.' } satisfies ActionData;
+  }
 }
 
 export default function LoginPage() {
-  const actionData = useActionData()
+  const actionData = useActionData<ActionData>();
   const navigation = useNavigation();
   const isSubmitting = navigation.state === 'submitting';
   const [showPassword, setShowPassword] = useState(false);
