@@ -1,4 +1,5 @@
 import { BookOpen } from 'lucide-react';
+import { Link } from 'react-router';
 
 export function Footer() {
   return (
@@ -31,7 +32,8 @@ export function Footer() {
               <ul className="space-y-2 text-gray-400 dark:text-gray-300 text-sm">
                 <li><a href="#" className="hover:text-[#d97757] transition-colors">Help Center</a></li>
                 <li><a href="#" className="hover:text-[#d97757] transition-colors">Contact Us</a></li>
-                <li><a href="#" className="hover:text-[#d97757] transition-colors">Privacy Policy</a></li>
+                <li><Link to="/privacy-policy" className="hover:text-[#d97757] transition-colors">Privacy Policy</Link></li>
+                <li><Link to="/terms-of-service" className="hover:text-[#d97757] transition-colors">Terms of Service</Link></li>
               </ul>
             </div>
 

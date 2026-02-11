@@ -1,10 +1,12 @@
 import { useState } from 'react';
-import { Menu, X, BookOpen, Sparkles, User } from 'lucide-react';
+import { Menu, X, Sparkles, User } from 'lucide-react';
 import { Link, NavLink } from 'react-router';
 
+interface NavbarProps {
+  isLoggedIn: boolean;
+}
 
-
-export function Navbar({ isLoggedIn } : any) {
+export function Navbar({ isLoggedIn }: NavbarProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   return (

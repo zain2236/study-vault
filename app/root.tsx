@@ -25,10 +25,33 @@ export const links: Route.LinksFunction = () => [
 
 export function Layout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
-      <head>
+    <html lang="en" suppressHydrationWarning>
+      <head suppressHydrationWarning>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
+        {import.meta.env.DEV && (
+          <script
+            dangerouslySetInnerHTML={{
+              __html: `
+                (function() {
+                  if (typeof window !== 'undefined') {
+                    const originalError = console.error;
+                    console.error = function(...args) {
+                      const message = args[0]?.toString() || '';
+                      // Only suppress React Router critical CSS hydration warnings
+                      if (message.includes('hydrated') && 
+                          (message.includes('data-react-router-critical-css') || 
+                           message.includes('react-router-critical-css'))) {
+                        return;
+                      }
+                      originalError.apply(console, args);
+                    };
+                  }
+                })();
+              `,
+            }}
+          />
+        )}
         <Meta />
         <Links />
         
