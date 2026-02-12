@@ -42,8 +42,8 @@ export function Footer() {
                 {/* Glow effect */}
                 <div className="absolute inset-0 bg-[#d97757] rounded-xl blur-lg opacity-50 group-hover:opacity-75 transition-opacity"></div>
                 {/* Logo */}
-                <div className="relative w-12 h-12 bg-linear-to-br from-[#d97757] to-[#c66647] rounded-xl flex items-center justify-center shadow-lg transform group-hover:scale-110 group-hover:rotate-6 transition-all duration-300">
-                  <BookOpen className="w-7 h-7 text-white" />
+                <div className="relative w-12 h-12  rounded-xl flex items-center justify-center shadow-lg transform group-hover:scale-110 group-hover:rotate-6 transition-all duration-300">
+                  <img src="/assests/fav-icon.png" alt="StudyVault" className="w-7 h-7" />
                 </div>
               </div>
               <div>
