@@ -84,7 +84,7 @@ export const BrowseResourceCard = memo(function BrowseResourceCard({ resource }:
 
         <button
           onClick={handleDownload}
-          className="w-full px-4 py-2.5 bg-[#d97757] text-white rounded-lg hover:bg-[#c66847] active:bg-[#b55937] transition-colors text-sm font-semibold flex items-center justify-center gap-2 focus:outline-none focus:ring-2 focus:ring-[#d97757]/50 focus:ring-offset-2"
+          className="w-full px-4 py-2.5 bg-[#d97757] cursor-pointer text-white rounded-lg hover:bg-[#c66847] active:bg-[#b55937] transition-colors text-sm font-semibold flex items-center justify-center gap-2 focus:outline-none focus:ring-2 focus:ring-[#d97757]/50 focus:ring-offset-2"
         >
           <Download className="w-4 h-4" aria-hidden="true" />
           Download
