@@ -14,6 +14,7 @@ import "./app.css";
 import { getUserId } from "./utils/cookie-session/session.server";
 import { getTotalResourceCount, getTotalUserCount } from "./utils/prisma/resource-prisma.server";
 
+// Root loader to get the total user and resource count
 export async function loader ({request}: Route.LoaderArgs) {
   const userId = await getUserId(request)
   const totalUser = await getTotalUserCount() || 0

@@ -6,7 +6,7 @@ import { Mail, Lock, ArrowRight, Eye, EyeOff, Loader2 } from 'lucide-react';
 import { createLoginSession, getUserId } from '../../utils/cookie-session/session.server';
 import prisma from '../../utils/prisma.server';
 import { verifyPassword } from '~/utils/password/password.server';
-import { validateEmail, validatePasswordLength } from '~/utils/validation/auth-validation.server';
+import { validateEmail } from '~/utils/validation/auth-validation.server';
 
 type ActionData = {
   error?: string;
@@ -36,11 +36,6 @@ export async function action({ request }: Route.ActionArgs) {
       return { error: emailError } satisfies ActionData;
     }
 
-    const passwordError = validatePasswordLength(password, 8);
-    if (passwordError) {
-      return { error: passwordError } satisfies ActionData;
-    }
-
     const user = await prisma.user.findUnique({ where: { email } });
 
     // Check user and credentials (generic error to avoid leaking which field is wrong)
@@ -48,9 +43,10 @@ export async function action({ request }: Route.ActionArgs) {
       return { error: 'Invalid email or password' } satisfies ActionData;
     }
 
+
     const verifiedPassword = await verifyPassword(password, user.password as string);
     if (!verifiedPassword) {
-      return { error: 'Invalid email or password' } satisfies ActionData;
+      return { error: 'Invalid password' } satisfies ActionData;
     }
 
     return await createLoginSession(user.id, '/user/dashboard');
@@ -67,13 +63,6 @@ export default function LoginPage() {
 
   return (
     <Form method="post" className="space-y-5">
-      {/* Error Message */}
-      {actionData?.error && (
-        <div className="mb-4 p-3 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800">
-          <p className="text-sm font-medium text-red-600 dark:text-red-400">{actionData.error}</p>
-        </div>
-      )}
-
       {/* Logo & Header inside card */}
       <div className="text-center mb-6">
         <div className="flex justify-center mb-2">
@@ -89,6 +78,12 @@ export default function LoginPage() {
         </p>
       </div>
 
+         {/* Error Message */}
+         {actionData?.error && (
+        <div className="mb-4 p-3 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800">
+          <p className="text-sm font-medium text-red-600 dark:text-red-400">{actionData.error}</p>
+        </div>
+      )}
       {/* Email Input */}
       <div className="space-y-1.5">
         <label htmlFor="email" className="block text-sm font-semibold text-[#d97757]">
