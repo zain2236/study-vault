@@ -33,15 +33,15 @@ export const BrowseResourceCard = memo(function BrowseResourceCard({ resource }:
         <div className="flex items-start justify-between">
           <div className="w-12 h-12 bg-[#d97757]/20 dark:bg-[#d97757]/30 rounded-lg flex items-center justify-center">
             {resource.fileType === 'PDF' ? (
-              <File className="w-6 h-6 text-[#d97757] dark:text-[#c66847]" aria-hidden="true" />
+              <File className="w-6 h-6 text-[#d97757] dark:text-gray-200" aria-hidden="true" />
             ) : (
-              <FileText className="w-6 h-6 text-[#d97757] dark:text-[#c66847]" aria-hidden="true" />
+              <FileText className="w-6 h-6 text-[#d97757] dark:text-gray-200" aria-hidden="true" />
             )}
           </div>
         </div>
 
         <div className="mt-4 flex items-center gap-2">
-          <span className="px-3 py-1 bg-[#d97757]/20 dark:bg-[#d97757]/30 rounded-full text-xs text-[#d97757] dark:text-[#c66847] font-medium">
+          <span className="px-3 py-1 bg-[#d97757]/20 dark:bg-[#d97757]/30 rounded-full text-xs text-[#d97757] dark:text-gray-100 font-medium">
             {resource.type}
           </span>
         </div>

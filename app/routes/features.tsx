@@ -1,11 +1,3 @@
-import {
-    Upload,
-    Search,
-    Download,
-    Users,
-    BookOpen,
-    Zap
-} from 'lucide-react';
 import { HowItWorks } from '../components/home-page-components/HowItWorks';
 import { CallToAction } from '~/components/home-page-components/CallToAction';
 import { Features } from '~/components/home-page-components/Features';
@@ -16,7 +8,7 @@ export default function FeaturesPage() {
             <Features />
 
             {/* Stats Section */}
-            <section className="py-20 bg-gradient-to-br from-[#d97757] to-[#c66847] text-white">
+            <section className="py-20 bg-linear-to-br from-[#d97757] to-[#c66847] text-white">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="text-center mb-12">
                         <h2 className="text-4xl lg:text-5xl font-heading font-bold mb-4">
