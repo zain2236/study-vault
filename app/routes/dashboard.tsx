@@ -1,6 +1,6 @@
 import type { Route } from './+types/dashboard';
-import { redirect, Form, useLoaderData, useFetcher, useSearchParams, useNavigate } from 'react-router';
-import { useState, useRef, useEffect } from 'react';
+import { redirect, Form, useLoaderData, useFetcher, useSearchParams, useNavigate, useNavigation, Await } from 'react-router';
+import { useState, useRef, useEffect, Suspense } from 'react';
 import { Upload, X, Plus, Filter, Loader2 } from 'lucide-react';
 
 import { ResourceCard } from '~/components/dashboard-components/ResourceCard';
@@ -23,44 +23,49 @@ export function meta({ }: Route.MetaArgs) {
 }
 
 export async function loader({ request }: Route.LoaderArgs) {
-  try {
-    const userId = await getUserId(request)
-    if (!userId) return redirect('/login')
+  const userId = await getUserId(request);
+  if (!userId) return redirect('/login');
 
-    const url = new URL(request.url);
-    const cursor = url.searchParams.get('cursor') || undefined;
-    const searchQuery = url.searchParams.get('search') || undefined;
-    const semester = url.searchParams.get('semester') || undefined;
-    const resourceType = url.searchParams.get('type') || undefined;
+  const url = new URL(request.url);
+  const cursor = url.searchParams.get('cursor') || undefined;
+  const searchQuery = url.searchParams.get('search') || undefined;
+  const semester = url.searchParams.get('semester') || undefined;
+  const resourceType = url.searchParams.get('type') || undefined;
 
-    // Get pagination result and semester counts
-    const [paginationResult, semesterCounts] = await Promise.all([
-      getPaginatedResources({
-        cursor,
-        searchQuery,
-        userId,
-        semester: semester ? parseInt(semester, 10) : undefined,
-        resourceType: resourceType && resourceType !== 'all' ? resourceType : undefined
-      }),
-      getUserSemesterCounts(userId)
-    ]);
+  const resourcesPromise = (async () => {
+    try {
+      const [paginationResult, semesterCounts] = await Promise.all([
+        getPaginatedResources({
+          cursor,
+          searchQuery,
+          userId,
+          semester: semester ? parseInt(semester, 10) : undefined,
+          resourceType: resourceType && resourceType !== 'all' ? resourceType : undefined
+        }),
+        getUserSemesterCounts(userId)
+      ]);
 
-    return {
-      resources: paginationResult.items || [],
-      nextCursor: paginationResult.nextCursor,
-      hasMore: paginationResult.hasMore,
-      semesterCounts: semesterCounts || {},
-      error: null
+      return {
+        resources: paginationResult.items || [],
+        nextCursor: paginationResult.nextCursor,
+        hasMore: paginationResult.hasMore,
+        semesterCounts: semesterCounts || {},
+        error: null as string | null
+      };
+    } catch (error) {
+      return {
+        resources: [],
+        nextCursor: null,
+        hasMore: false,
+        semesterCounts: {},
+        error: 'Service is down. Please try again.'
+      };
     }
-  } catch (error) {
-    return {
-      resources: [],
-      nextCursor: null,
-      hasMore: false,
-      semesterCounts: {},
-      error: 'Service is down. Please try again.'
-    }
-  }
+  })();
+
+  return ({
+    resourcesData: resourcesPromise
+  });
 }
 
 export async function action({ request }: Route.ActionArgs) {
@@ -190,19 +195,28 @@ export async function action({ request }: Route.ActionArgs) {
   }
 }
 
-export default function Dashboard() {
-  const loaderData = useLoaderData<typeof loader>();
+type DashboardData = {
+  resources: any[];
+  nextCursor: string | null;
+  hasMore: boolean;
+  semesterCounts: Record<number, number>;
+  error: string | null;
+};
+
+function DashboardContent({ data }: { data: DashboardData }) {
   const fetcher = useFetcher<typeof action>();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  const navigation = useNavigation();
+  const isRouteLoading = navigation.state === 'loading';
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [uploadModalOpen, setUploadModalOpen] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [uploadMessage, setUploadMessage] = useState<{ type: 'error' | 'success'; text: string } | null>(null);
-  const [allResources, setAllResources] = useState(loaderData.resources);
-  const [nextCursor, setNextCursor] = useState(loaderData.nextCursor);
-  const [hasMore, setHasMore] = useState(loaderData.hasMore);
+  const [allResources, setAllResources] = useState(data.resources);
+  const [nextCursor, setNextCursor] = useState(data.nextCursor);
+  const [hasMore, setHasMore] = useState(data.hasMore);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [uploadPhase, setUploadPhase] = useState<'idle' | 'prepare' | 'upload' | 'confirm'>('idle');
@@ -211,10 +225,10 @@ export default function Dashboard() {
 
   // Update resources when loader data changes
   useEffect(() => {
-    setAllResources(loaderData.resources);
-    setNextCursor(loaderData.nextCursor);
-    setHasMore(loaderData.hasMore);
-  }, [loaderData.resources, loaderData.nextCursor, loaderData.hasMore]);
+    setAllResources(data.resources);
+    setNextCursor(data.nextCursor);
+    setHasMore(data.hasMore);
+  }, [data.resources, data.nextCursor, data.hasMore]);
 
   // Update resources when fetcher loads more
   useEffect(() => {
@@ -228,12 +242,12 @@ export default function Dashboard() {
 
   // Expose semester counts to layout
   useEffect(() => {
-    (window as any).dashboardSemesterCounts = loaderData.semesterCounts;
+    (window as any).dashboardSemesterCounts = data.semesterCounts;
     window.dispatchEvent(new CustomEvent('dashboardCountsUpdated'));
     return () => {
       delete (window as any).dashboardSemesterCounts;
     };
-  }, [loaderData.semesterCounts]);
+  }, [data.semesterCounts]);
 
   const MAX_SIZE_BYTES = 10 * 1024 * 1024; // 10MB
   const ALLOWED_TYPES = [
@@ -465,7 +479,7 @@ export default function Dashboard() {
 
 
       {/* Show error message if there is an error */}
-      {loaderData.error ? (
+      {data.error ? (
         <div className="bg-white dark:bg-gray-700 rounded-xl p-12 text-center">
           <div className="w-20 h-20 bg-red-100 dark:bg-red-900/20 rounded-full flex items-center justify-center mx-auto mb-4">
             <svg className="w-10 h-10 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -473,7 +487,7 @@ export default function Dashboard() {
             </svg>
           </div>
           <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-2">Unable to Load Resources</h3>
-          <p className="text-gray-600 dark:text-gray-300 mb-6 max-w-md mx-auto">{loaderData.error}</p>
+          <p className="text-gray-600 dark:text-gray-300 mb-6 max-w-md mx-auto">{data.error}</p>
           <div className="flex gap-3 justify-center">
             <button
               onClick={() => window.location.reload()}
@@ -682,5 +696,58 @@ export default function Dashboard() {
         </div>
       )}
     </>
+  );
+}
+
+function DashboardFallback() {
+  return (
+    <>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 gap-4">
+        <div>
+          <div className="h-6 w-40 bg-gray-200 dark:bg-gray-600 rounded-md animate-pulse" />
+          <div className="h-4 w-64 bg-gray-200 dark:bg-gray-700 rounded-md mt-3 animate-pulse" />
+        </div>
+        <div className="h-10 w-40 bg-[#d97757]/40 rounded-lg animate-pulse" />
+      </div>
+
+      <div className="flex flex-wrap gap-3 mb-6">
+        {Array.from({ length: 4 }).map((_, idx) => (
+          <div
+            key={idx}
+            className="h-9 w-28 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg animate-pulse"
+          />
+        ))}
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {Array.from({ length: 6 }).map((_, idx) => (
+          <div
+            key={idx}
+            className="bg-white dark:bg-gray-700 rounded-xl p-6 space-y-4 border border-gray-200/70 dark:border-gray-600/70 animate-pulse"
+          >
+            <div className="h-4 w-24 bg-gray-200 dark:bg-gray-600 rounded-full" />
+            <div className="h-5 w-3/4 bg-gray-200 dark:bg-gray-600 rounded-full" />
+            <div className="h-3 w-full bg-gray-200 dark:bg-gray-600 rounded-full" />
+            <div className="h-3 w-2/3 bg-gray-200 dark:bg-gray-600 rounded-full" />
+            <div className="flex justify-between items-center pt-2">
+              <div className="h-3 w-16 bg-gray-200 dark:bg-gray-600 rounded-full" />
+              <div className="h-8 w-24 bg-gray-200 dark:bg-gray-600 rounded-lg" />
+            </div>
+          </div>
+        ))}
+      </div>
+    </>
+  );
+}
+
+export default function Dashboard() {
+  const { resourcesData } = useLoaderData<typeof loader>();
+
+  return (
+    <Suspense fallback={<DashboardFallback />}>
+      <Await resolve={resourcesData}>
+        {(data: DashboardData) => <DashboardContent data={data} />}
+      </Await>
+    </Suspense>
   );
 }

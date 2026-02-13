@@ -2,15 +2,8 @@ import { useLoaderData } from 'react-router';
 import { HowItWorks } from '../components/home-page-components/HowItWorks';
 import { CallToAction } from '~/components/home-page-components/CallToAction';
 import { Features } from '~/components/home-page-components/Features';
-import { getTotalResourceCount, getTotalUserCount } from '~/utils/prisma/resource-prisma.server';
 
-export async function loader() {
-    const totalResource = await getTotalResourceCount()
-    const totalUser = await getTotalUserCount()
-    return { totalResource, totalUser }
-}
 export default function FeaturesPage()     {
-    const { totalResource, totalUser } = useLoaderData<typeof loader>()
     return (
         <div className="min-h-screen bg-[#f5f5f0]">
             <Features />
@@ -29,8 +22,8 @@ export default function FeaturesPage()     {
 
                     <div className="grid grid-cols-2 lg:grid-cols-4 gap-8">
                         {[
-                            { number: `${totalUser + 100}+`, label: "Active Students" },
-                            { number: `${totalResource + 100}+`, label: "Resources Shared" },
+                            { number: `150+`, label: "Active Students" },
+                            { number: "250+", label: "Resources Shared" },
                             { number: "1K+", label: "Downloads" },
                             { number: "99%", label: "Satisfaction Rate" }
                         ].map((stat, idx) => (

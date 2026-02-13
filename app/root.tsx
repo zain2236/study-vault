@@ -66,7 +66,11 @@ export function Layout({ children }: { children: React.ReactNode }) {
 }
 
 export default function App() {
-  return <Outlet />;
+  return (
+    <>
+      <Outlet />
+    </>
+  );
 }
 export function NotFoundPage() {
   return <NotFoundPageComponent />;
@@ -113,3 +117,5 @@ export function ErrorBoundary() {
     </main>
   );
 }
+
+

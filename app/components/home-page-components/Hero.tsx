@@ -1,7 +1,7 @@
 import { ArrowRight, Upload, BookOpen, Download, Sparkle } from 'lucide-react';
 import { Link } from 'react-router';
 
-export function Hero({userCount, resourceCount}: {userCount: number, resourceCount: number}) {
+export function Hero() {
   return (
     <section className="relative overflow-hidden">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-12 pb-20 lg:pt-16 lg:pb-24">
@@ -34,11 +34,11 @@ export function Hero({userCount, resourceCount}: {userCount: number, resourceCou
 
               <div className="flex items-center space-x-8 pt-4">
                 <div>
-                  <div className="text-3xl font-bold text-gray-900 dark:text-gray-50">{userCount}+</div>
+                  <div className="text-3xl font-bold text-gray-900 dark:text-gray-50">100+</div>
                   <div className="text-sm text-gray-600 dark:text-gray-300">Active Students</div>
                 </div>
                 <div>
-                  <div className="text-3xl font-bold text-gray-900 dark:text-gray-50">{resourceCount}+</div>
+                  <div className="text-3xl font-bold text-gray-900 dark:text-gray-50">2000+</div>
                   <div className="text-sm text-gray-600 dark:text-gray-300">Resources Shared</div>
                 </div>
                 <div>
@@ -97,7 +97,7 @@ export function Hero({userCount, resourceCount}: {userCount: number, resourceCou
                 <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-600 relative z-10">
                   <div className="flex items-center justify-between text-sm">
                     <span className="text-gray-600 dark:text-gray-200 font-medium">Your contribution impact</span>
-                    <span className="text-[#d97757] font-bold bg-[#d97757]/10 dark:bg-[#d97757]/20 px-3 py-1 rounded-full">{userCount} students helped</span>
+                    <span className="text-[#d97757] font-bold bg-[#d97757]/10 dark:bg-[#d97757]/20 px-3 py-1 rounded-full">100+ students helped</span>
                   </div>
                 </div>
               </div>

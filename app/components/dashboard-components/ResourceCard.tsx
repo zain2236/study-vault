@@ -77,6 +77,7 @@ export const ResourceCard = memo(function ResourceCard({ resource }: ResourceCar
   const [isDeleting, setIsDeleting] = useState(false);
   const [relativeTime, setRelativeTime] = useState('');
   const [message, setMessage] = useState<{ type: 'error' | 'success'; text: string } | null>(null);
+  const [downloads, setDownloads] = useState<number>(resource.downloads ?? 0);
   
   const lastPublishIntentRef = useRef<'publish' | 'unpublish' | null>(null);
 
@@ -108,6 +109,8 @@ export const ResourceCard = memo(function ResourceCard({ resource }: ResourceCar
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
+
+        setDownloads((prev) => prev + 1);
 
         // Refresh dashboard data (e.g., download count) after a short delay
         setTimeout(() => revalidator.revalidate(), 1000);
@@ -298,7 +301,7 @@ export const ResourceCard = memo(function ResourceCard({ resource }: ResourceCar
 
             <div className="flex items-center gap-1.5 text-sm text-gray-700 dark:text-gray-300">
               <Download className="w-4 h-4 text-[#d97757]" aria-hidden="true" />
-              <span className="font-semibold">{resource.downloads ?? 0}</span>
+              <span className="font-semibold">{downloads}</span>
             </div>
           </div>
 

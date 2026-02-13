@@ -1,5 +1,5 @@
-import { useState, useMemo, useCallback, useEffect } from 'react';
-import { useLoaderData, useFetcher, useSearchParams, type MetaFunction } from 'react-router';
+import { useState, useMemo, useCallback, useEffect, Suspense } from 'react';
+import { useLoaderData, useFetcher, useSearchParams, Await, type MetaFunction } from 'react-router';
 
 import { BrowseResourceCard } from '~/components/resources-page-components/BrowseResourceCard';
 import { PageHeader } from '~/components/resources-page-components/PageHeader';
@@ -70,42 +70,48 @@ export const meta: MetaFunction = () => {
 
 // Loader function
 export async function loader({ request }: { request: Request }) {
-  try {
-    const url = new URL(request.url);
-    const cursor = url.searchParams.get('cursor') || undefined;
-    const searchQuery = url.searchParams.get('search') || undefined;
-    const semester = url.searchParams.get('semester') || undefined;
-    const resourceType = url.searchParams.get('type') || undefined;
+  const url = new URL(request.url);
+  const cursor = url.searchParams.get('cursor') || undefined;
+  const searchQuery = url.searchParams.get('search') || undefined;
+  const semester = url.searchParams.get('semester') || undefined;
+  const resourceType = url.searchParams.get('type') || undefined;
 
-    const [paginationResult, totalCount, userCount] = await Promise.all([
-      getPaginatedResources({
-        cursor,
-        searchQuery,
-        semester: semester ? parseInt(semester, 10) : undefined,
-        resourceType: resourceType !== 'all' ? resourceType : undefined
-      }),
-      getTotalResourceCount(),
-      getTotalUserCount()
-    ]);
+  const resourcesPromise: Promise<ResourcesData> = (async () => {
+    try {
+      const [paginationResult, totalCount, userCount] = await Promise.all([
+        getPaginatedResources({
+          cursor,
+          searchQuery,
+          semester: semester ? parseInt(semester, 10) : undefined,
+          resourceType: resourceType !== 'all' ? resourceType : undefined
+        }),
+        getTotalResourceCount(),
+        getTotalUserCount()
+      ]);
 
-    return {
-      resources: paginationResult.items,
-      nextCursor: paginationResult.nextCursor,
-      hasMore: paginationResult.hasMore,
-      totalCount,
-      userCount,
-      error: null
-    };
-  } catch (error) {
-    return {
-      resources: [],
-      nextCursor: null,
-      hasMore: false,
-      totalCount: 0,
-      userCount: 0,
-      error: 'Something went wrong. Please try again.'
-    };
-  }
+      return {
+        resources: paginationResult.items as TransformedResource[],
+        nextCursor: paginationResult.nextCursor as string | null,
+        hasMore: paginationResult.hasMore as boolean,
+        totalCount,
+        userCount,
+        error: null,
+      };
+    } catch {
+      return {
+        resources: [] as TransformedResource[],
+        nextCursor: null,
+        hasMore: false,
+        totalCount: 0,
+        userCount: 0,
+        error: 'Something went wrong. Please try again.',
+      };
+    }
+  })();
+
+  return {
+    resourcesData: resourcesPromise,
+  };
 }
 
 // Action function for loading more resources
@@ -141,9 +147,20 @@ export async function action({ request }: { request: Request }) {
   }
 }
 
-// Main Page Component
-export default function BrowseResourcesPage() {
-  const loaderData = useLoaderData<typeof loader>();
+type ResourcesData = {
+  resources: TransformedResource[];
+  nextCursor: string | null;
+  hasMore: boolean;
+  totalCount: number;
+  userCount: number;
+  error: string | null;
+};
+
+type BrowseResourcesContentProps = {
+  data: ResourcesData;
+};
+
+function BrowseResourcesContent({ data }: BrowseResourcesContentProps) {
   const fetcher = useFetcher<typeof action>();
   const [searchParams, setSearchParams] = useSearchParams();
   
@@ -179,16 +196,16 @@ export default function BrowseResourcesPage() {
   const debouncedSearchQuery = useDebounce(filters.searchQuery, 500);
   
   const [refineCardOpen, setRefineCardOpen] = useState(false);
-  const [allResources, setAllResources] = useState<TransformedResource[]>(loaderData.resources);
-  const [nextCursor, setNextCursor] = useState<string | null>(loaderData.nextCursor);
-  const [hasMore, setHasMore] = useState(loaderData.hasMore);
+  const [allResources, setAllResources] = useState<TransformedResource[]>(data.resources);
+  const [nextCursor, setNextCursor] = useState<string | null>(data.nextCursor);
+  const [hasMore, setHasMore] = useState(data.hasMore);
 
   // Update resources when loader data changes
   useEffect(() => {
-    setAllResources(loaderData.resources);
-    setNextCursor(loaderData.nextCursor);
-    setHasMore(loaderData.hasMore);
-  }, [loaderData.resources, loaderData.nextCursor, loaderData.hasMore]);
+    setAllResources(data.resources);
+    setNextCursor(data.nextCursor);
+    setHasMore(data.hasMore);
+  }, [data.resources, data.nextCursor, data.hasMore]);
 
   // Update resources when fetcher loads more
   useEffect(() => {
@@ -264,6 +281,16 @@ export default function BrowseResourcesPage() {
 
   const isLoadingMore = fetcher.state === 'submitting';
 
+  const handleResourceDownloaded = useCallback((id: number) => {
+    setAllResources(prev =>
+      prev.map(resource =>
+        resource.id === id
+          ? { ...resource, downloads: resource.downloads + 1 }
+          : resource
+      )
+    );
+  }, []);
+
   return (
     <div className="min-h-screen bg-[#f5f5f0] dark:bg-gray-800 py-8 lg:py-12">
       {/* Background decorations */}
@@ -278,7 +305,7 @@ export default function BrowseResourcesPage() {
           </div>
         )}
         <PageHeader
-          resourceCount={loaderData.totalCount}
+          resourceCount={data.totalCount}
           filters={filters}
           semesterCounts={semesterCounts}
           refineCardOpen={refineCardOpen}
@@ -289,14 +316,14 @@ export default function BrowseResourcesPage() {
           onClearFilters={handleClearFilters}
         />
         
-        <StatsBanner resourceCount={loaderData.totalCount} userCount={loaderData.userCount} />
+        <StatsBanner resourceCount={data.totalCount} userCount={data.userCount} />
 
         {/* Results Count */}
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center space-x-2">
             <p className="text-sm text-gray-600 dark:text-gray-400">
               Showing <span className="font-bold text-[#d97757]">{allResources.length}</span> of{' '}
-              <span className="font-semibold text-gray-900 dark:text-gray-100">{loaderData.totalCount}</span> resources
+              <span className="font-semibold text-gray-900 dark:text-gray-100">{data.totalCount}</span> resources
             </p>
           </div>
         </div>
@@ -306,7 +333,11 @@ export default function BrowseResourcesPage() {
           <>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
               {allResources.map((resource) => (
-                <BrowseResourceCard key={resource.id} resource={resource} />
+                <BrowseResourceCard
+                  key={resource.id}
+                  resource={resource}
+                  onDownloaded={handleResourceDownloaded}
+                />
               ))}
             </div>
 
@@ -322,5 +353,64 @@ export default function BrowseResourcesPage() {
         )}
       </div>
     </div>
+  );
+}
+
+function BrowseResourcesFallback() {
+  return (
+    <div className="min-h-screen bg-[#f5f5f0] dark:bg-gray-800 py-8 lg:py-12">
+      <div className="fixed top-20 right-10 w-72 h-72 bg-[#d97757] opacity-5 dark:opacity-10 rounded-full blur-3xl pointer-events-none"></div>
+      <div className="fixed bottom-20 left-10 w-96 h-96 bg-[#d97757] opacity-5 dark:opacity-10 rounded-full blur-3xl pointer-events-none"></div>
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        <div className="mb-8 space-y-4">
+          <div className="h-6 w-48 bg-gray-400 dark:bg-gray-700 rounded-md animate-pulse" />
+          <div className="h-4 w-80 bg-gray-400 dark:bg-gray-700 rounded-md animate-pulse" />
+          <div className="h-10 w-full max-w-xl bg-gray-200 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg animate-pulse" />
+        </div>
+
+        <div className="mb-6 h-24 w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl animate-pulse" />
+
+        <div className="flex items-center justify-between mb-6">
+          <div className="h-4 w-64 bg-gray-400 dark:bg-gray-700 rounded-md animate-pulse" />
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
+          {Array.from({ length: 9 }).map((_, idx) => (
+            <div
+              key={idx}
+              className="bg-white dark:bg-gray-700 rounded-xl p-6 space-y-4 border border-gray-300/70 dark:border-gray-600/70 animate-pulse"
+            >
+              <div className="h-4 w-24 bg-gray-400 dark:bg-gray-600 rounded-full" />
+              <div className="h-5 w-3/4 bg-gray-400 dark:bg-gray-600 rounded-full" />
+              <div className="h-3 w-full bg-gray-400 dark:bg-gray-600 rounded-full" />
+              <div className="h-3 w-5/6 bg-gray-400 dark:bg-gray-600 rounded-full" />
+              <div className="flex justify-between items-center pt-2">
+                <div className="h-3 w-20 bg-gray-400 dark:bg-gray-600 rounded-full" />
+                <div className="h-8 w-24 bg-gray-400 dark:bg-gray-600 rounded-lg" />
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// Main Page Component
+export default function BrowseResourcesPage() {
+  const loaderData = useLoaderData<typeof loader>();
+  const { resourcesData } = loaderData as {
+    resourcesData: Promise<ResourcesData>;
+  };
+
+  return (
+    <Suspense fallback={<BrowseResourcesFallback />}>
+      <Await resolve={resourcesData}>
+        {(data: ResourcesData) => (
+          <BrowseResourcesContent data={data} />
+        )}
+      </Await>
+    </Suspense>
   );
 }
