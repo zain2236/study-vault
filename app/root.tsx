@@ -11,27 +11,7 @@ import {
 import type { Route } from "./+types/root";
 import NotFoundPageComponent from "./routes/_404";
 import "./app.css";
-import { getUserId } from "./utils/cookie-session/session.server";
-import { getTotalResourceCount, getTotalUserCount } from "./utils/prisma/resource-prisma.server";
 
-// Root loader to get the total user and resource count
-export async function loader ({request}: Route.LoaderArgs) {
-  const userId = await getUserId(request)
-  const totalUser = await getTotalUserCount() || 0
-  const totalResource = await getTotalResourceCount() || 0
-  if (!totalUser || !totalResource || !userId) {
-    return {
-      userId: null,
-      totalUser,
-      totalResource
-    }
-  }
-  return {
-    userId,
-    totalUser,
-    totalResource
-  }
-}
 export const links: Route.LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
   {

@@ -10,6 +10,7 @@ export default [
         route("features", "routes/features.tsx"),
         route("terms-of-service", "routes/terms-of-service.tsx"),
         route("privacy-policy", "routes/privacy-policy.tsx"),
+        route("disclaimer", "routes/disclaimer.tsx"),
     ]),
 
     // Dashboard Layout

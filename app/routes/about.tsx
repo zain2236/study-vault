@@ -105,9 +105,9 @@ const AboutPage = ({loaderData} : any) => {
   ];
 
   return (
-    <div className="min-h-screen bg-[#f5f5f0]">
+    <div className="min-h-screen bg-[#f5f5f0] dark:bg-gray-900">
       {/* Hero Section */}
-      <section className="relative overflow-hidden bg-[#f5f5f0]">
+      <section className="relative overflow-hidden bg-[#f5f5f0] dark:bg-gray-900">
         {/* Animated Background Elements */}
         <div className="absolute top-0 right-0 w-96 h-96 bg-[#d97757]/10 rounded-full blur-3xl animate-pulse" />
         <div className="absolute bottom-0 left-0 w-96 h-96 bg-[#c66847]/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
@@ -121,7 +121,7 @@ const AboutPage = ({loaderData} : any) => {
             </div>
 
             {/* Main Heading */}
-            <h1 className="text-5xl sm:text-6xl lg:text-7xl font-heading font-bold text-gray-900 leading-tight">
+            <h1 className="text-5xl sm:text-6xl lg:text-7xl font-heading font-bold text-gray-900 dark:text-gray-100 leading-tight">
               Empowering Students
               <span className="block mt-2 bg-linear-to-r from-[#d97757] to-[#c66847] bg-clip-text text-transparent">
                 Through Knowledge
@@ -129,7 +129,7 @@ const AboutPage = ({loaderData} : any) => {
             </h1>
 
             {/* Description */}
-            <p className="max-w-3xl mx-auto text-lg sm:text-xl font-body text-gray-700 leading-relaxed">
+            <p className="max-w-3xl mx-auto text-lg sm:text-xl font-body text-gray-700 dark:text-gray-300 leading-relaxed">
               We're building the world's largest student-driven platform for sharing educational resources, 
               helping millions of students achieve their academic goals.
             </p>
@@ -140,7 +140,7 @@ const AboutPage = ({loaderData} : any) => {
             {stats.map((stat, index) => (
               <div 
                 key={index}
-                className="group relative bg-white rounded-2xl p-6 shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 border border-gray-200/50 overflow-hidden"
+                className="group relative bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 border border-gray-200/50 dark:border-gray-700/50 overflow-hidden"
               >
                 {/* Gradient Overlay */}
                 <div className="absolute inset-0 bg-linear-to-br from-[#d97757]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
@@ -150,10 +150,10 @@ const AboutPage = ({loaderData} : any) => {
                     <stat.icon className="w-6 h-6 text-white" />
                   </div>
                   <div>
-                    <div className="text-3xl font-heading font-bold text-gray-900">
+                    <div className="text-3xl font-heading font-bold text-gray-900 dark:text-gray-100">
                       {stat.value}
                     </div>
-                    <div className="text-sm font-body text-gray-600 font-medium">
+                    <div className="text-sm font-body text-gray-600 dark:text-gray-400 font-medium">
                       {stat.label}
                     </div>
                   </div>
@@ -165,7 +165,7 @@ const AboutPage = ({loaderData} : any) => {
       </section>
 
       {/* Mission Section */}
-      <section className="relative py-24 bg-white">
+      <section className="relative py-24 bg-white dark:bg-gray-900">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid lg:grid-cols-2 gap-16 items-center">
             <div className="space-y-6">
@@ -174,31 +174,31 @@ const AboutPage = ({loaderData} : any) => {
                 <span className="text-sm font-semibold text-[#d97757]">Our Mission</span>
               </div>
               
-              <h2 className="text-4xl lg:text-5xl font-heading font-bold text-gray-900 leading-tight">
+              <h2 className="text-4xl lg:text-5xl font-heading font-bold text-gray-900 dark:text-gray-100 leading-tight">
                 Making Education Accessible for Everyone
               </h2>
               
-              <p className="text-lg font-body text-gray-700 leading-relaxed">
+              <p className="text-lg font-body text-gray-700 dark:text-gray-300 leading-relaxed">
                 We believe that quality educational resources should be free and accessible to all students, 
                 regardless of their location or financial situation. Our platform connects students worldwide, 
                 enabling them to share knowledge, collaborate, and succeed together.
               </p>
               
-              <p className="text-lg font-body text-gray-700 leading-relaxed">
+              <p className="text-lg font-body text-gray-700 dark:text-gray-300 leading-relaxed">
                 By fostering a community of learners and contributors, we're breaking down barriers and 
                 creating opportunities for millions of students to reach their full potential.
               </p>
 
               <div className="flex flex-wrap gap-4 pt-4">
-                <div className="flex items-center gap-2 text-gray-800">
+                <div className="flex items-center gap-2 text-gray-800 dark:text-gray-200">
                   <CheckCircle className="w-5 h-5 text-[#d97757]" />
                   <span className="font-body font-medium">100% Free Access</span>
                 </div>
-                <div className="flex items-center gap-2 text-gray-800">
+                <div className="flex items-center gap-2 text-gray-800 dark:text-gray-200">
                   <CheckCircle className="w-5 h-5 text-[#d97757]" />
                   <span className="font-body font-medium">Community Verified</span>
                 </div>
-                <div className="flex items-center gap-2 text-gray-800">
+                <div className="flex items-center gap-2 text-gray-800 dark:text-gray-200">
                   <CheckCircle className="w-5 h-5 text-[#d97757]" />
                   <span className="font-body font-medium">Always Updated</span>
                 </div>
@@ -210,15 +210,15 @@ const AboutPage = ({loaderData} : any) => {
               {features.map((feature, index) => (
                 <div 
                   key={index}
-                  className="group bg-linear-to-br from-[#f9f9f5] to-white rounded-2xl p-6 shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 border border-gray-200/50"
+                  className="group bg-linear-to-br from-[#f9f9f5] to-white dark:from-gray-800 dark:to-gray-800 rounded-2xl p-6 shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 border border-gray-200/50 dark:border-gray-700/50"
                 >
                   <div className="w-12 h-12 rounded-xl bg-linear-to-br from-[#d97757] to-[#c66847] flex items-center justify-center mb-4 group-hover:scale-110 transition-transform shadow-lg">
                     <feature.icon className="w-6 h-6 text-white" />
                   </div>
-                  <h3 className="text-lg font-heading font-bold text-gray-900 mb-2">
+                  <h3 className="text-lg font-heading font-bold text-gray-900 dark:text-gray-100 mb-2">
                     {feature.title}
                   </h3>
-                  <p className="text-sm font-body text-gray-600 leading-relaxed">
+                  <p className="text-sm font-body text-gray-600 dark:text-gray-400 leading-relaxed">
                     {feature.description}
                   </p>
                 </div>
@@ -257,7 +257,7 @@ const AboutPage = ({loaderData} : any) => {
       </section>
 
       {/* Values Section */}
-      <section className="py-24 bg-[#f5f5f0]">
+      <section className="py-24 bg-[#f5f5f0] dark:bg-gray-900">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center space-y-4 mb-16">
             <div className="inline-flex items-center gap-2 px-4 py-2 bg-[#d97757]/10 rounded-full">
@@ -265,7 +265,7 @@ const AboutPage = ({loaderData} : any) => {
               <span className="text-sm font-semibold text-[#d97757]">Our Values</span>
             </div>
             
-            <h2 className="text-4xl lg:text-5xl font-heading font-bold text-gray-900">
+            <h2 className="text-4xl lg:text-5xl font-heading font-bold text-gray-900 dark:text-gray-100">
               What We Stand For
             </h2>
           </div>
@@ -274,7 +274,7 @@ const AboutPage = ({loaderData} : any) => {
             {values.map((value, index) => (
               <div 
                 key={index}
-                className="group relative bg-white rounded-2xl p-8 shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 border border-gray-200/50 overflow-hidden"
+                className="group relative bg-white dark:bg-gray-800 rounded-2xl p-8 shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 border border-gray-200/50 dark:border-gray-700/50 overflow-hidden"
               >
                 {/* Gradient Background */}
                 <div className="absolute inset-0 bg-linear-to-br from-[#d97757]/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
@@ -284,11 +284,11 @@ const AboutPage = ({loaderData} : any) => {
                     <value.icon className="w-8 h-8 text-white" />
                   </div>
                   
-                  <h3 className="text-2xl font-heading font-bold text-gray-900">
+                  <h3 className="text-2xl font-heading font-bold text-gray-900 dark:text-gray-100">
                     {value.title}
                   </h3>
                   
-                  <p className="font-body text-gray-700 leading-relaxed">
+                  <p className="font-body text-gray-700 dark:text-gray-300 leading-relaxed">
                     {value.description}
                   </p>
                 </div>
@@ -299,7 +299,7 @@ const AboutPage = ({loaderData} : any) => {
       </section>
 
       {/* Timeline Section */}
-      <section className="py-24 bg-white">
+      <section className="py-24 bg-white dark:bg-gray-900">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center space-y-4 mb-16">
             <div className="inline-flex items-center gap-2 px-4 py-2 bg-[#d97757]/10 rounded-full">
@@ -307,7 +307,7 @@ const AboutPage = ({loaderData} : any) => {
               <span className="text-sm font-semibold text-[#d97757]">Our Journey</span>
             </div>
             
-            <h2 className="text-4xl lg:text-5xl font-heading font-bold text-gray-900">
+            <h2 className="text-4xl lg:text-5xl font-heading font-bold text-gray-900 dark:text-gray-100">
               Growing Together
             </h2>
           </div>
@@ -323,11 +323,11 @@ const AboutPage = ({loaderData} : any) => {
                   className={`flex items-center gap-8 ${index % 2 === 0 ? 'lg:flex-row' : 'lg:flex-row-reverse'}`}
                 >
                   <div className={`flex-1 ${index % 2 === 0 ? 'lg:text-right' : 'lg:text-left'}`}>
-                    <div className="inline-block bg-white rounded-2xl p-6 shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 border border-gray-200/50 group">
+                    <div className="inline-block bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 border border-gray-200/50 dark:border-gray-700/50 group">
                       <div className="space-y-3">
                         <div className="text-3xl font-heading font-bold text-[#d97757]">{item.year}</div>
-                        <h3 className="text-xl font-heading font-bold text-gray-900">{item.event}</h3>
-                        <p className="font-body text-gray-600">{item.description}</p>
+                        <h3 className="text-xl font-heading font-bold text-gray-900 dark:text-gray-100">{item.event}</h3>
+                        <p className="font-body text-gray-600 dark:text-gray-400">{item.description}</p>
                       </div>
                     </div>
                   </div>
@@ -361,7 +361,7 @@ const AboutPage = ({loaderData} : any) => {
           </p>
 
           <div className="flex flex-wrap gap-4 justify-center pt-4">
-            <Link to='/sign-up' className="px-8 py-4 bg-white text-[#d97757] rounded-xl font-semibold text-lg shadow-2xl hover:shadow-xl transition-all duration-300 hover:scale-105 active:scale-95 flex items-center gap-2 group">
+            <Link to='/sign-up' className="px-8 py-4 bg-white dark:bg-gray-800 text-[#d97757] rounded-xl font-semibold text-lg shadow-2xl hover:shadow-xl transition-all duration-300 hover:scale-105 active:scale-95 flex items-center gap-2 group">
               Get Started
               <Sparkles className="w-5 h-5 group-hover:rotate-12 transition-transform" />
             </Link>
