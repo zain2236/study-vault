@@ -1,5 +1,4 @@
-import type { loader } from '~/root';
-import { Link, useRouteLoaderData } from 'react-router';
+import { Link } from 'react-router';
 import {
   BookOpen,
   Mail,
@@ -12,12 +11,8 @@ import {
 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 
-export function Footer() {
+export function Footer({totalUser, totalResource} : {totalUser: number, totalResource: number}) {
   const [currentYear, setCurrentYear] = useState('');
-
-  // Get data from root loader
-  const data = useRouteLoaderData<typeof loader>('root')!
-  const { totalUser, totalResource } = data
 
   // Fix hydration mismatch - useEffect mein date set karo
   useEffect(() => {
@@ -107,7 +102,7 @@ export function Footer() {
                 {[
                   { label: 'Home', href: '/' },
                   { label: 'About', href: '/about' },
-                  { label: 'Resources', href: '/browse' },
+                  { label: 'Resources', href: '/resources' },
                   { label: 'Features', href: '/features' }
                 ].map((link, idx) => (
                   <li key={idx}>

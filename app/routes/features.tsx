@@ -1,13 +1,16 @@
-import { useRouteLoaderData } from 'react-router';
+import { useLoaderData } from 'react-router';
 import { HowItWorks } from '../components/home-page-components/HowItWorks';
 import { CallToAction } from '~/components/home-page-components/CallToAction';
 import { Features } from '~/components/home-page-components/Features';
-import { loader } from '~/root';
+import { getTotalResourceCount, getTotalUserCount } from '~/utils/prisma/resource-prisma.server';
 
-export default async function FeaturesPage() {
-
-    const data = await useRouteLoaderData<typeof loader>('root')!
-    const { totalUser, totalResource } = data
+export async function loader() {
+    const totalResource = await getTotalResourceCount()
+    const totalUser = await getTotalUserCount()
+    return { totalResource, totalUser }
+}
+export default function FeaturesPage()     {
+    const { totalResource, totalUser } = useLoaderData<typeof loader>()
     return (
         <div className="min-h-screen bg-[#f5f5f0]">
             <Features />
