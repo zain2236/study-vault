@@ -17,15 +17,19 @@ interface BrowseResource {
 
 interface BrowseResourceCardProps {
   resource: BrowseResource;
+  onDownloaded?: (id: number) => void;
 }
 
-export const BrowseResourceCard = memo(function BrowseResourceCard({ resource }: BrowseResourceCardProps) {
+export const BrowseResourceCard = memo(function BrowseResourceCard({ resource, onDownloaded }: BrowseResourceCardProps) {
   const revalidator = useRevalidator();
 
   const handleDownload = useCallback(() => {
+    if (onDownloaded) {
+      onDownloaded(resource.id);
+    }
     window.location.href = `/download/${resource.id}`;
     setTimeout(() => revalidator.revalidate(), 1000);
-  }, [resource.id, revalidator]);
+  }, [resource.id, revalidator, onDownloaded]);
 
   return (
     <article className="bg-white dark:bg-gray-800 rounded-xl shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-200 border border-gray-200 dark:border-gray-700 overflow-hidden">

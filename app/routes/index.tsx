@@ -3,7 +3,6 @@ import { Features } from '../components/home-page-components/Features';
 import { HowItWorks } from '../components/home-page-components/HowItWorks';
 import { Benefits } from '../components/home-page-components/Benefits';
 import { CallToAction } from '../components/home-page-components/CallToAction';
-import { getTotalResourceCount, getTotalUserCount } from '~/utils/prisma/resource-prisma.server';
 
 import type { MetaFunction } from 'react-router';
 
@@ -72,30 +71,11 @@ export const meta: MetaFunction = () => {
   ];
 };
 
-export async function loader() {
-  try {
-    const [userCount, resourceCount] = await Promise.all([
-      getTotalUserCount(),
-      getTotalResourceCount()
-    ]);
-    return {
-      userCount,
-      resourceCount
-    }
-  } catch (error) {
-    return {
-      userCount: 0,
-      resourceCount: 0
-    }
-  }
-  
-}
-
-export default function LandingPage({loaderData} : any) {
+export default function LandingPage() {
   return (
     <>
       {/* SECTION 2: HERO */}
-      <Hero userCount={loaderData.userCount} resourceCount={loaderData.resourceCount} />
+      <Hero />
 
       {/* SECTION 3: FEATURES */}
       <Features />

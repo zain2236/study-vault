@@ -11,7 +11,7 @@ import {
 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 
-export function Footer({totalUser, totalResource} : {totalUser: number, totalResource: number}) {
+export function Footer() {
   const [currentYear, setCurrentYear] = useState('');
 
   // Fix hydration mismatch - useEffect mein date set karo
@@ -56,8 +56,8 @@ export function Footer({totalUser, totalResource} : {totalUser: number, totalRes
             {/* Stats */}
             <div className="flex items-center space-x-6 mb-6">
               {[
-                { value: totalUser, label: 'Students' },
-                { value: totalResource, label: 'Resources' }
+                { value: "150+", label: 'Students' },
+                { value: "250+", label: 'Resources' }
               ].map((stat, idx) => (
                 <div key={idx} className="text-center">
                   <div className="text-2xl font-heading font-bold text-[#d97757] mb-1">{stat.value}</div>
