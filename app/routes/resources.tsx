@@ -1,5 +1,5 @@
 import { useState, useMemo, useCallback, useEffect } from 'react';
-import { useLoaderData, useFetcher, useSearchParams } from 'react-router';
+import { useLoaderData, useFetcher, useSearchParams, type MetaFunction } from 'react-router';
 
 import { BrowseResourceCard } from '~/components/resources-page-components/BrowseResourceCard';
 import { PageHeader } from '~/components/resources-page-components/PageHeader';
@@ -13,6 +13,60 @@ import {
 } from '~/utils/resources/resource-filters';
 import type { TransformedResource } from '~/utils/resources/resource-transform.server';
 import { useDebounce } from '~/utils/hooks/use-debounce';
+
+export const meta: MetaFunction = () => {
+  return [
+    { title: 'Browse Resources - Study Vault | Smart Search & Pagination' },
+    { 
+      name: 'description', 
+      content: 'Explore thousands of educational resources on Study Vault. Use our smart search with debouncing and easy pagination to find study materials by subject, semester, and type. Download PDFs, notes, and study guides instantly.' 
+    },
+    { 
+      name: 'keywords', 
+      content: 'browse resources, study materials, educational resources, search notes, filter by subject, semester resources, PDF download, study guides, exam notes, course materials, paginated search, instant search, debounced search' 
+    },
+    
+    // Open Graph / Facebook
+    { property: 'og:type', content: 'website' },
+    { property: 'og:url', content: 'https://studyvault.com/resources' },
+    { property: 'og:title', content: 'Browse Educational Resources - Study Vault' },
+    { 
+      property: 'og:description', 
+      content: 'Find the perfect study materials with smart search and pagination. Filter by subject, semester, and type. Thousands of resources available for instant download.' 
+    },
+    { property: 'og:site_name', content: 'Study Vault' },
+    
+    // Twitter
+    { name: 'twitter:card', content: 'summary_large_image' },
+    { name: 'twitter:title', content: 'Browse Educational Resources - Study Vault' },
+    { 
+      name: 'twitter:description', 
+      content: 'Find the perfect study materials with smart search and pagination. Filter by subject, semester, and type.' 
+    },
+    
+    // Additional SEO
+    { name: 'robots', content: 'index, follow, max-image-preview:large' },
+    { name: 'googlebot', content: 'index, follow' },
+    { name: 'theme-color', content: '#d97757' },
+    
+    // Schema.org markup for search functionality
+    {
+      'script:ld+json': {
+        '@context': 'https://schema.org',
+        '@type': 'CollectionPage',
+        name: 'Educational Resources',
+        description: 'Browse and search thousands of educational resources organized by subject and semester',
+        url: 'https://studyvault.com/resources',
+        mainEntity: {
+          '@type': 'ItemList',
+          name: 'Study Resources',
+          description: 'Educational materials uploaded and shared by students'
+        }
+      }
+    },
+  ];
+};
+
 
 // Loader function
 export async function loader({ request }: { request: Request }) {

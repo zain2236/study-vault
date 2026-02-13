@@ -18,9 +18,9 @@ export function CallToAction() {
               <span>Create Free Account</span>
               <ArrowRight className="w-5 h-5" />
             </Link>
-            <button className="border-2 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-100 px-10 py-5 rounded-lg hover:border-[#d97757] hover:text-[#d97757] transition-all text-lg font-semibold">
-              Watch Demo
-            </button>
+            <Link to={'/about'} className="border-2 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-100 px-10 py-5 rounded-lg hover:border-[#d97757] hover:text-[#d97757] transition-all text-lg font-semibold">
+              About Us
+            </Link>
           </div>
 
           <p className="text-sm text-gray-500 dark:text-gray-300 mt-6">No credit card required • Free forever • 2 minute setup</p>

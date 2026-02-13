@@ -3,6 +3,44 @@ import { Link } from 'react-router';
 import { BookOpen, Users, Target, Zap, Award, Heart, TrendingUp, Sparkles, Globe, Shield, Clock, CheckCircle } from 'lucide-react';
 import { getTotalResourceCount, getTotalUserCount } from '~/utils/prisma/resource-prisma.server';
 
+import type { MetaFunction } from 'react-router';
+
+export const meta: MetaFunction = () => {
+  return [
+    { title: 'About Us - Empowering Students Through Knowledge' },
+    { 
+      name: 'description', 
+      content: 'Learn about our mission to make education accessible for everyone. Join thousands of students sharing resources and building a collaborative learning community.' 
+    },
+    { 
+      name: 'keywords', 
+      content: 'about us, student platform, educational resources, online learning, student community, academic collaboration, free education' 
+    },
+    
+    // Open Graph / Facebook
+    { property: 'og:type', content: 'website' },
+    { property: 'og:title', content: 'About Us - Empowering Students Through Knowledge' },
+    { 
+      property: 'og:description', 
+      content: 'Join thousands of students in our mission to make quality educational resources free and accessible to everyone, everywhere.' 
+    },
+    { property: 'og:site_name', content: 'Study Vault' },
+    
+    // Twitter
+    { name: 'twitter:card', content: 'summary_large_image' },
+    { name: 'twitter:title', content: 'About Us - Empowering Students Through Knowledge' },
+    { 
+      name: 'twitter:description', 
+      content: 'Join thousands of students in our mission to make quality educational resources free and accessible to everyone, everywhere.' 
+    },
+    
+    // Additional SEO
+    { name: 'robots', content: 'index, follow' },
+    { name: 'author', content: 'Study Vault' },
+    { name: 'theme-color', content: '#d97757' },
+  ];
+};
+
 export async function loader() {
   const totalUser = await getTotalUserCount() || 0
   const totalResource = await getTotalResourceCount() || 0
@@ -328,7 +366,7 @@ const AboutPage = ({loaderData} : any) => {
               <Sparkles className="w-5 h-5 group-hover:rotate-12 transition-transform" />
             </Link>
             
-            <Link to='/about' className="px-8 py-4 bg-white/10 backdrop-blur-md text-white rounded-xl font-semibold text-lg border-2 border-white/20 hover:bg-white/20 transition-all duration-300 hover:scale-105 active:scale-95">
+            <Link to='/features' className="px-8 py-4 bg-white/10 backdrop-blur-md text-white rounded-xl font-semibold text-lg border-2 border-white/20 hover:bg-white/20 transition-all duration-300 hover:scale-105 active:scale-95">
               Learn More
             </Link>
           </div>
