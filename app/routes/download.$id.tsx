@@ -66,7 +66,7 @@ export async function loader({ params }: Route.LoaderArgs) {
 
       const fileName = generateDownloadFileName(updatedResource.title, updatedResource.file_path);
 
-      return new Response(fileBuffer, {
+      return new Response(new Uint8Array(fileBuffer), {
         headers: {
           'Content-Type': getMimeType(updatedResource.file_path),
           'Content-Disposition': `attachment; filename="${fileName}"`,
