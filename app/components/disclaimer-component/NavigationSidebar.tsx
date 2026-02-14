@@ -1,4 +1,4 @@
-import { BookOpen, GraduationCap, Globe, AlertCircle, RefreshCw, Mail, Scale } from 'lucide-react';
+import { BookOpen, GraduationCap, Globe, AlertCircle, Mail, Scale } from 'lucide-react';
 
 export function NavigationSidebar() {
   return (

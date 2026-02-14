@@ -1,7 +1,6 @@
 import { Link } from 'react-router';
 
 import { BookOpen, Users, Target, Zap, Award, Heart, TrendingUp, Sparkles, Globe, Shield, Clock, CheckCircle } from 'lucide-react';
-import { getTotalResourceCount, getTotalUserCount } from '~/utils/prisma/resource-prisma.server';
 
 import type { MetaFunction } from 'react-router';
 
@@ -41,18 +40,11 @@ export const meta: MetaFunction = () => {
   ];
 };
 
-export async function loader() {
-  const totalUser = await getTotalUserCount() || 0
-  const totalResource = await getTotalResourceCount() || 0
-
-  return {totalResource , totalUser}
-}
-
-const AboutPage = ({loaderData} : any) => {
+const AboutPage = () => {
   const stats = [
-    { label: 'Active Users', value: `${loaderData.totalUser + 100}+`, icon: Users },
-    { label: 'Resources Shared', value: `${loaderData.totalResource + 150}+`, icon: BookOpen },
-    { label: 'Universities', value: '10+', icon: Globe },
+    { label: 'Active Users', value: '1500+', icon: Users },
+    { label: 'Resources Shared', value: '250+', icon: BookOpen },
+    { label: 'Universities', value: '5+', icon: Globe },
     { label: 'Success Rate', value: '98%', icon: TrendingUp }
   ];
 
@@ -242,9 +234,9 @@ const AboutPage = ({loaderData} : any) => {
 
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-8">
             {[
-              { number: `${loaderData.totalUser + 100}+`, label: "Active Students" },
-              { number: `${loaderData.totalResource + 150}+`, label: "Resources Shared" },
-              { number: "100K+", label: "Downloads" },
+              { number: "150+", label: "Active Students" },
+              { number: "250+", label: "Resources Shared" },
+              { number: "5+", label: "Universities" },
               { number: "99%", label: "Satisfaction Rate" }
             ].map((stat, idx) => (
               <div key={idx} className="text-center">
