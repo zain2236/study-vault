@@ -8,12 +8,11 @@ export default {
   // Pre-render static pages at build time for better performance and SEO
   async prerender() {
     return [
-      "/",
       "/about",
-      "/features",
       "/privacy-policy",
       "/disclaimer",
       "/terms-of-service",
+      "/404"
     ];
   },
 } satisfies Config;
