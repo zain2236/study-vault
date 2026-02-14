@@ -99,7 +99,7 @@ export default function NotFoundPage() {
                 Dashboard
               </Link>
               <Link 
-                to="/browse" 
+                to="/resources" 
                 className="px-4 py-2 bg-white text-gray-700 rounded-lg hover:bg-[#d97757] hover:text-white transition-all text-sm font-heading font-medium shadow-sm"
               >
                 Browse Resources

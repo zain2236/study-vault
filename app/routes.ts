@@ -31,6 +31,9 @@ export default [
     // R2 upload API route (server action for presigned URLs + confirm)
     route("api.r2-upload", "routes/api.r2-upload.tsx"),
 
+    // 404 route
+    route("404", "routes/_404.tsx"),
 
-    route("*", "routes/_404.tsx"),
+    // catch all route
+    route("*", "routes/$.tsx"),
 ] satisfies RouteConfig;
