@@ -457,8 +457,8 @@ function DashboardContent({ data }: { data: DashboardData }) {
   const filterOptions = [
     { label: 'All Types', value: null, icon: Filter },
     { label: 'Notes', value: 'Notes' },
-    { label: 'Assignments', value: 'Assignments' },
-    { label: 'Quizzes', value: 'Quizzes' },
+    { label: 'Assignment', value: 'Assignment' },
+    { label: 'Quiz', value: 'Quiz' },
   ];
 
   return (
