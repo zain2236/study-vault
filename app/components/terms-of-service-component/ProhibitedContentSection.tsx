@@ -29,7 +29,7 @@ export function ProhibitedContentSection() {
         {prohibitedItems.map((item, idx) => (
           <div key={idx} className="flex items-start space-x-3 p-4 bg-white bg-opacity-10 dark:bg-white/5 rounded-lg backdrop-blur-sm">
             <XCircle className="w-5 h-5 text-red-400 dark:text-red-400 shrink-0 mt-0.5" strokeWidth={2} />
-            <span className="text-white dark:text-gray-200 font-body text-sm">{item}</span>
+            <span className="text-gray-600 dark:text-gray-200 font-body text-sm">{item}</span>
           </div>
         ))}
       </div>
