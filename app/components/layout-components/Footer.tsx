@@ -1,6 +1,5 @@
 import { Link } from 'react-router';
 import {
-  BookOpen,
   Mail,
   Github,
   Heart,
@@ -71,16 +70,16 @@ export function Footer() {
               <p className="text-xs text-gray-500 font-heading uppercase tracking-wider mb-3">Connect With Us</p>
               <div className="flex items-center space-x-3">
                 {[
-                  { icon: Facebook, href: 'https://facebook.com', label: 'Facebook', color: 'hover:bg-[#d97757]/90' },
-                  { icon: Github, href: 'https://github.com', label: 'GitHub', color: 'hover:bg-[#d97757]/90' },
-                  { icon: Instagram, href: 'https://instagram.com', label: 'Instagram', color: 'hover:bg-[#d97757]/90' }
+                  { icon: Facebook, href: 'https://www.facebook.com/share/17rPs8Vp9Q/', label: 'Facebook', color: 'hover:bg-[#d97757]/90' },
+                  { icon: Github, href: 'https://github.com/zain2236', label: 'GitHub', color: 'hover:bg-[#d97757]/90' },
+                  { icon: Instagram, href: 'https://www.instagram.com/notyourhowdy?igsh=MXg5ZTU0Ym40NTNpNw%3D%3D', label: 'Instagram', color: 'hover:bg-[#d97757]/90' }
                 ].map((social, idx) => (
                   <a
                     key={idx}
                     href={social.href}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className={`w-10 h-10 bg-white bg-opacity-5 backdrop-blur-sm ${social.color} border border-gray-800 hover:border-transparent rounded-xl flex items-center justify-center transition-all duration-300 transform hover:scale-110 hover:-translate-y-1 group`}
+                    className={`w-8 h-8 bg-white bg-opacity-5 backdrop-blur-sm ${social.color} border border-gray-800 hover:border-transparent rounded-xl flex items-center justify-center transition-all duration-300 transform hover:scale-110 hover:-translate-y-1 group`}
                     aria-label={social.label}
                   >
                     <social.icon className="w-5 h-5 text-gray-400 group-hover:text-white transition-colors" />
@@ -151,9 +150,9 @@ export function Footer() {
               </div>
               <ul className="space-y-3">
                 {[
-                  { label: 'Support', email: 'support@studyvault.com' },
-                  { label: 'General Inquiry', email: 'hello@studyvault.com' },
-                  { label: 'Legal', email: 'legal@studyvault.com' }
+                  { label: 'Support', email: 'syedzain2236@gmail.com' },
+                  { label: 'General Inquiry', email: 'syedzain2236@gmail.com' },
+                  { label: 'Legal', email: 'syedzain2236@gmail.com' }
                 ].map((link, idx) => (
                   <li key={idx}>
                     <a
